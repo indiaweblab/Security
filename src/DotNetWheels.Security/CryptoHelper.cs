@@ -36,9 +36,10 @@ namespace DotNetWheels.Security
         /// Gets the SHA1 value of input string.
         /// </summary>
         /// <param name="input">The input string.</param>
-        public static String GetSHA1(String input)
+        /// <param name="size">Hash size used by the algorithm.</param>
+        public static String GetSHA1(String input, SHA1HashSize size = SHA1HashSize.SHA160)
         {
-            return _onewayhash.GetSHA1(input);
+            return _onewayhash.GetSHA1(input, size);
         }
 
         /// <summary>

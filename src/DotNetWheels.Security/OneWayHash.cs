@@ -10,26 +10,11 @@ namespace DotNetWheels.Security
 {
     internal class OneWayHash : IOneWayHash
     {
-        /// <summary>
-        /// 获取输入字符串的MD5值
-        /// </summary>
-        /// <param name="input">输入的字符串</param>
-        /// <returns></returns>
-        public String GetMD5(String input)
-        {
-            if (String.IsNullOrWhiteSpace(input))
-            {
-                return null;
-            }
-
-            return GetMD5(input, 0, input.Length);
-        }
 
         /// <summary>
         /// 获取指定输入流的MD5值
         /// </summary>
         /// <param name="inputStream">输入流</param>
-        /// <returns></returns>
         public String GetMD5(Stream inputStream)
         {
             if (inputStream == null)
@@ -37,99 +22,123 @@ namespace DotNetWheels.Security
                 return null;
             }
 
-            Byte[] data;
+            Byte[] result = null;
+            MD5 md5Hasher = null;
 
-            using (MD5 md5Hasher = MD5.Create())
+            try
             {
-                data = md5Hasher.ComputeHash(inputStream);
+                md5Hasher = MD5.Create();
+                result = md5Hasher.ComputeHash(inputStream);
+            }
+            catch
+            {
+                return null;
+            }
+            finally
+            {
+                if (md5Hasher != null)
+                {
+                    md5Hasher.Dispose();
+                }
             }
 
-            if (data == null || data.Length == 0)
+            if (result == null || result.Length == 0)
             {
-                return String.Empty;
+                return null;
             }
 
-            StringBuilder sBuilder = new StringBuilder();
-            for (Int32 i = 0; i < data.Length; i++)
+            StringBuilder sb = new StringBuilder();
+            foreach (var b in result)
             {
-                sBuilder.Append(data[i].ToString("x2"));
+                sb.Append(b.ToString("x2"));
             }
 
-            return sBuilder.ToString();
+            return sb.ToString();
         }
 
         /// <summary>
         /// 获取输入字符串的MD5值
         /// </summary>
         /// <param name="input">输入字符串</param>
-        /// <param name="offset">字节数组中的偏移量，从该位置开始使用数据。</param>
-        /// <param name="count">数组中用作数据的字节数。</param>
-        /// <returns></returns>
-        public String GetMD5(String input, Int32 offset, Int32 count)
+        public String GetMD5(String input)
         {
-            if (String.IsNullOrWhiteSpace(input))
+            if (String.IsNullOrEmpty(input))
             {
                 return null;
             }
 
-            Byte[] data;
+            Byte[] data = null;
+            Byte[] result = null;
+            MD5 md5Hasher = null;
 
-            using (MD5 md5Hasher = MD5.Create())
+            try
             {
-                data = md5Hasher.ComputeHash(Encoding.UTF8.GetBytes(input), offset, count);
+                data = Encoding.UTF8.GetBytes(input);
+                md5Hasher = MD5.Create();
+                result = md5Hasher.ComputeHash(data);
+            }
+            catch
+            {
+                return null;
+            }
+            finally
+            {
+                if (md5Hasher != null)
+                {
+                    md5Hasher.Dispose();
+                }
             }
 
-            if (data == null || data.Length == 0)
+            if (result == null || result.Length == 0)
             {
                 return null;
             }
 
-            StringBuilder sBuilder = new StringBuilder();
-            for (Int32 i = 0; i < data.Length; i++)
+            StringBuilder sb = new StringBuilder();
+            foreach (var b in result)
             {
-                sBuilder.Append(data[i].ToString("x2"));
+                sb.Append(b.ToString("x2"));
             }
 
-            return sBuilder.ToString();
-        }
-
-        /// <summary>
-        /// 获取输入字符串的SHA1值
-        /// </summary>
-        /// <param name="input">输入的字符串</param>
-        /// <returns></returns>
-        public String GetSHA1(String input)
-        {
-            if (String.IsNullOrWhiteSpace(input))
-            {
-                return null;
-            }
-
-            return GetSHA1(input, 0, input.Length);
+            return sb.ToString();
         }
 
         /// <summary>
         /// 获取指定输入流的SHA1值
         /// </summary>
         /// <param name="inputStream">输入流</param>
+        /// <param name="size">算法所用的Hash大小</param>
         /// <returns></returns>
-        public String GetSHA1(Stream inputStream)
+        public String GetSHA1(Stream inputStream, SHA1HashSize size = SHA1HashSize.SHA160)
         {
             if (inputStream == null)
             {
                 return null;
             }
 
-            Byte[] result;
+            Byte[] result = null;
+            HashAlgorithm sh1csp = null;
 
-            using (SHA1CryptoServiceProvider sh1csp = new SHA1CryptoServiceProvider())
+            try
             {
+                sh1csp = GetSHA1Algorithm(size);
                 result = sh1csp.ComputeHash(inputStream);
+            }
+            catch
+            {
+                return null;
+            }
+            finally
+            {
+                if (sh1csp != null)
+                {
+                    sh1csp.Dispose();
+                }
             }
 
             if (result == null || result.Length == 0)
             {
-                return String.Empty;
+                return null;
             }
 
             StringBuilder sb = new StringBuilder();
@@ -145,26 +154,39 @@ namespace DotNetWheels.Security
         /// 获取输入字符串的SHA1值
         /// </summary>
         /// <param name="input">输入字符串</param>
-        /// <param name="offset">字节数组中的偏移量，从该位置开始使用数据。</param>
-        /// <param name="count">数组中用作数据的字节数。</param>
-        /// <returns></returns>
-        public String GetSHA1(String input, Int32 offset, Int32 count)
+        /// <param name="size">算法所用的Hash大小</param>
+        public String GetSHA1(String input, SHA1HashSize size = SHA1HashSize.SHA160)
         {
-            if (String.IsNullOrWhiteSpace(input))
+            if (String.IsNullOrEmpty(input))
             {
                 return null;
             }
 
-            Byte[] bytes = Encoding.UTF8.GetBytes(input), result;
-            using (SHA1CryptoServiceProvider sh1csp = new SHA1CryptoServiceProvider())
+            Byte[] data = null;
+            Byte[] result = null;
+            HashAlgorithm sh1csp = null;
+
+            try
             {
-                result = sh1csp.ComputeHash(bytes, offset, count);
-                sh1csp.Clear();
+                data = Encoding.UTF8.GetBytes(input);
+                sh1csp = GetSHA1Algorithm(size);
+                result = sh1csp.ComputeHash(data);
+            }
+            catch
+            {
+                return null;
+            }
+            finally
+            {
+                if (sh1csp != null)
+                {
+                    sh1csp.Dispose();
+                }
             }
 
             if (result == null || result.Length == 0)
             {
-                return String.Empty;
+                return null;
             }
 
             StringBuilder sb = new StringBuilder();
@@ -174,6 +196,19 @@ namespace DotNetWheels.Security
             }
 
             return sb.ToString();
+        }
+
+        private HashAlgorithm GetSHA1Algorithm(SHA1HashSize size)
+        {
+            switch (size)
+            {
+                case SHA1HashSize.SHA256:
+                    return new SHA256Managed();
+                case SHA1HashSize.SHA512:
+                    return new SHA512Managed();
+                default:
+                    return new SHA1Managed();
+            }
         }
     }
 }
