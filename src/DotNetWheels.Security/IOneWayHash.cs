@@ -27,35 +27,19 @@ namespace DotNetWheels.Security
         String GetMD5(Stream inputStream);
 
         /// <summary>
-        /// 获取输入字符串的MD5值
-        /// </summary>
-        /// <param name="input">输入字符串</param>
-        /// <param name="offset">字节数组中的偏移量，从该位置开始使用数据。</param>
-        /// <param name="count">数组中用作数据的字节数。</param>
-        /// <returns></returns>
-        String GetMD5(String input, Int32 offset, Int32 count);
-
-        /// <summary>
         /// 获取输入字符串的SHA1值
         /// </summary>
         /// <param name="input">输入的字符串</param>
+        /// <param name="size">算法所用的Hash大小</param>
         /// <returns></returns>
-        String GetSHA1(String input);
+        String GetSHA1(String input, SHA1HashSize size);
 
         /// <summary>
         /// 获取指定输入流的SHA1值
         /// </summary>
         /// <param name="inputStream">输入流</param>
+        /// <param name="size">算法所用的Hash大小</param>
         /// <returns></returns>
-        String GetSHA1(Stream inputStream);
-
-        /// <summary>
-        /// 获取输入字符串的SHA1值
-        /// </summary>
-        /// <param name="input">输入字符串</param>
-        /// <param name="offset">字节数组中的偏移量，从该位置开始使用数据。</param>
-        /// <param name="count">数组中用作数据的字节数。</param>
-        /// <returns></returns>
-        String GetSHA1(String input, Int32 offset, Int32 count);
+        String GetSHA1(Stream inputStream, SHA1HashSize size);
     }
 }

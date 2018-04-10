@@ -5,6 +5,7 @@
     <Authors>DotNetWheels</Authors>
     <Product>DotNetWheels</Product>
     <Description>DotNetWheels.</Description>
+    <Version>1.0.3</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
