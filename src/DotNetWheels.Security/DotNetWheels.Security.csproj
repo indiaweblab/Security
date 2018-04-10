@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>DotNetWheels</Authors>
+    <Product>DotNetWheels</Product>
+    <Description>DotNetWheels.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="icopy $(TargetDir) E:\lib\$(TargetName)\$(TargetFileName) -include .dll&#xD;&#xA;dotnet pack $(ProjectPath) --no-build --include-symbols -c Release -o E:\Packages" />
+  </Target>
+
+</Project>
