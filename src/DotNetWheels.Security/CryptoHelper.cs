@@ -62,6 +62,21 @@ namespace DotNetWheels.Security
             return _aesprovider.Encrypt(input, new KeyManager(key));
         }
 
+        public static Byte[] Encrypt(Stream s, String key)
+        {
+            if (s == null)
+            {
+                throw new ArgumentNullException("The stream is null");
+            }
+
+            if (String.IsNullOrEmpty(key))
+            {
+                throw new ArgumentNullException("The key is null");
+            }
+
+            return _aesprovider.Encrypt(s, new KeyManager(key));
+        }
+
         /// <summary>
         /// Decrypts the encryped string using AES provider with the key.
         /// </summary>
@@ -80,6 +95,21 @@ namespace DotNetWheels.Security
             }
 
             return _aesprovider.Decrypt(encryptedString, new KeyManager(key));
+        }
+
+        public static Stream Decrypt(Byte[] encryptedData, String key)
+        {
+            if (encryptedData == null || encryptedData.Length == 0)
+            {
+                throw new ArgumentNullException("The encrypted value is null");
+            }
+
+            if (String.IsNullOrEmpty(key))
+            {
+                throw new ArgumentNullException("The key is null");
+            }
+
+            return _aesprovider.Decrypt(encryptedData, new KeyManager(key));
         }
 
     }
