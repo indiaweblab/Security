@@ -27,6 +27,11 @@ namespace DotNetWheels.Security
             return ReplaceText(text);
         }
 
+        public Byte[] Encrypt(Stream input, KeyManager km)
+        {
+            return EncryptStream_Aes(input, km);
+        }
+
         /// <summary>
         /// Decrypts the encrypted string with key and iv.
         /// </summary>
@@ -51,6 +56,11 @@ namespace DotNetWheels.Security
             }
 
             return DecryptStringFromBytes_Aes(encrypted, km);
+        }
+
+        public Stream Decrypt(Byte[] encryptedData, KeyManager km)
+        {
+            return DecryptStream_Aes(encryptedData, km);
         }
 
         private Byte[] EncryptStringToBytes_Aes(String plainText, KeyManager km)
@@ -113,6 +123,68 @@ namespace DotNetWheels.Security
             return encrypted;
 
         }
+        private Byte[] EncryptStream_Aes(Stream stream, KeyManager km)
+        {
+            if (stream == null || !stream.CanRead)
+            {
+                throw new ArgumentNullException("The stream isn't support");
+            }
+
+            if (km == null)
+            {
+                throw new ArgumentNullException("The km is null");
+            }
+
+            Byte[] encrypted = null;
+
+            // Create an Aes object
+            // with the specified key and IV.
+            using (Aes aesAlg = Aes.Create())
+            {
+
+                aesAlg.KeySize = KeySize;
+                aesAlg.BlockSize = BlockSize;
+                aesAlg.Padding = PaddingMode;
+
+                km.GenerateKeyAndIV(KeySize, BlockSize);
+
+                aesAlg.Key = km.Key;
+                aesAlg.IV = km.IV;
+
+                // Create a decrytor to perform the stream transform.
+                ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
+
+                // Create the streams used for encryption.
+                using (MemoryStream msEncrypt = new MemoryStream())
+                {
+                    CryptoStream csEncrypt = null;
+                    try
+                    {
+                        csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write);
+
+                        Byte[] buffer = new Byte[2048];
+                        Int32 read = 0;
+
+                        while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+                        {
+                            csEncrypt.Write(buffer, 0, read);
+                        }
+
+                        encrypted = msEncrypt.ToArray();
+                    }
+                    catch (Exception) { }
+                    finally
+                    {
+                        if (csEncrypt != null) { csEncrypt.Dispose(); }
+                    }
+                }
+
+                aesAlg.Clear();
+            }
+
+            // Return the encrypted bytes from the memory stream.
+            return encrypted;
+        }
         private String DecryptStringFromBytes_Aes(Byte[] cipherText, KeyManager km)
         {
             // Check arguments.
@@ -172,6 +244,66 @@ namespace DotNetWheels.Security
             }
             return plaintext;
         }
+        private Stream DecryptStream_Aes(Byte[] encryptedData, KeyManager km)
+        {
+            if (encryptedData == null || encryptedData.Length == 0)
+            {
+                throw new ArgumentNullException("The encryptedData is null");
+            }
+
+            if (km == null)
+            {
+                throw new ArgumentNullException("km");
+            }
+
+            MemoryStream result = null;
+
+            // Create an Aes object
+            // with the specified key and IV.
+            using (Aes aesAlg = Aes.Create())
+            {
+
+                aesAlg.KeySize = KeySize;
+                aesAlg.BlockSize = BlockSize;
+                aesAlg.Padding = PaddingMode;
+
+                km.GenerateKeyAndIV(KeySize, BlockSize);
+
+                aesAlg.Key = km.Key;
+                aesAlg.IV = km.IV;
+
+                // Create a decrytor to perform the stream transform.
+                ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
+
+                // Create the streams used for decryption.
+                using (MemoryStream msDecrypt = new MemoryStream(encryptedData))
+                {
+                    CryptoStream csDecrypt = null;
+                    try
+                    {
+                        csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read);
+
+                        Byte[] buffer = new Byte[2048];
+                        Int32 read = 0;
+                        result = new MemoryStream();
+
+                        while ((read = csDecrypt.Read(buffer, 0, buffer.Length)) > 0)
+                        {
+                            result.Write(buffer, 0, read);
+                        }
+                    }
+                    catch (Exception) { }
+                    finally
+                    {
+                        if (csDecrypt != null) { csDecrypt.Dispose(); }
+                    }
+                }
+
+                aesAlg.Clear();
+            }
+
+            return result;
+        }
 
         private String ReplaceText(String text)
         {
@@ -182,6 +314,5 @@ namespace DotNetWheels.Security
         {
             return text.Replace('!', '+').Replace('-', '/').Replace('_', '=');
         }
-
     }
 }
