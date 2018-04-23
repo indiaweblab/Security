@@ -39,13 +39,13 @@ namespace DotNetWheelsSecurityTests
             Assert.NotNull(encryptedData);
 
             var result = String.Join(",", encryptedData);
-            Assert.Equal("58,143,163,226,98,227,248,23,182,33,1,70,120,211,125,45", result);
+            Assert.Equal("52,56,101,50,54,53,100,98,49,50,49,102,99,48,99,56", result);
         }
 
         [Fact]
         public void TestDecryptStream()
         {
-            String[] chars = "58,143,163,226,98,227,248,23,182,33,1,70,120,211,125,45".Split(',');
+            String[] chars = "52,56,101,50,54,53,100,98,49,50,49,102,99,48,99,56".Split(',');
             Byte[] encryptedData = new Byte[chars.Length];
             for (var i = 0; i < chars.Length; i++)
             {
