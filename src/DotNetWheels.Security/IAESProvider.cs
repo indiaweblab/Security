@@ -40,6 +40,6 @@ namespace DotNetWheels.Security
         /// <param name="encryptedStream"></param>
         /// <param name="km"></param>
         /// <returns></returns>
-        Stream Decrypt(Byte[] encryptedData, KeyManager km);
+        Byte[] Decrypt(Byte[] encryptedData, KeyManager km);
     }
 }
