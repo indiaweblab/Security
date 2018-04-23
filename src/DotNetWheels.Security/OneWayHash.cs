@@ -14,10 +14,10 @@ namespace DotNetWheels.Security
         /// <summary>
         /// 获取指定输入流的MD5值
         /// </summary>
-        /// <param name="inputStream">输入流</param>
-        public String GetMD5(Stream inputStream)
+        /// <param name="stream">输入流</param>
+        public String GetMD5(Stream stream)
         {
-            if (inputStream == null)
+            if (stream == null)
             {
                 return null;
             }
@@ -28,7 +28,7 @@ namespace DotNetWheels.Security
             try
             {
                 md5Hasher = MD5.Create();
-                result = md5Hasher.ComputeHash(inputStream);
+                result = md5Hasher.ComputeHash(stream);
             }
             catch
             {
@@ -106,12 +106,12 @@ namespace DotNetWheels.Security
         /// <summary>
         /// 获取指定输入流的SHA1值
         /// </summary>
-        /// <param name="inputStream">输入流</param>
+        /// <param name="stream">输入流</param>
         /// <param name="size">算法所用的Hash大小</param>
         /// <returns></returns>
-        public String GetSHA1(Stream inputStream, SHA1HashSize size = SHA1HashSize.SHA160)
+        public String GetSHA1(Stream stream, SHA1HashSize size = SHA1HashSize.SHA160)
         {
-            if (inputStream == null)
+            if (stream == null)
             {
                 return null;
             }
@@ -122,7 +122,7 @@ namespace DotNetWheels.Security
             try
             {
                 sh1csp = GetSHA1Algorithm(size);
-                result = sh1csp.ComputeHash(inputStream);
+                result = sh1csp.ComputeHash(stream);
             }
             catch
             {

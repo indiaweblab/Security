@@ -97,7 +97,7 @@ namespace DotNetWheels.Security
             return _aesprovider.Decrypt(encryptedString, new KeyManager(key));
         }
 
-        public static Stream Decrypt(Byte[] encryptedData, String key)
+        public static Byte[] Decrypt(Byte[] encryptedData, String key)
         {
             if (encryptedData == null || encryptedData.Length == 0)
             {
