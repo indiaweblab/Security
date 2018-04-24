@@ -41,7 +41,14 @@ namespace DotNetWheels.Security
                 throw new ArgumentNullException("The key is null");
             }
 
-            return _aesprovider.Encrypt(input, new KeyManager(key));
+            try
+            {
+                return _aesprovider.Encrypt(input, new KeyManager(key));
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         public static String Decrypt(String encryptedString, String key)
@@ -56,7 +63,14 @@ namespace DotNetWheels.Security
                 throw new ArgumentNullException("The key is null");
             }
 
-            return _aesprovider.Decrypt(encryptedString, new KeyManager(key));
+            try
+            {
+                return _aesprovider.Decrypt(encryptedString, new KeyManager(key));
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         public static Byte[] Encrypt(Stream stream, String key)
@@ -71,7 +85,14 @@ namespace DotNetWheels.Security
                 throw new ArgumentNullException("The key is null");
             }
 
-            return _aesprovider.Encrypt(stream, new KeyManager(key));
+            try
+            {
+                return _aesprovider.Encrypt(stream, new KeyManager(key));
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         public static Byte[] Decrypt(Byte[] encryptedData, String key)
@@ -86,7 +107,36 @@ namespace DotNetWheels.Security
                 throw new ArgumentNullException("The key is null");
             }
 
-            return _aesprovider.Decrypt(encryptedData, new KeyManager(key));
+            try
+            {
+                return _aesprovider.Decrypt(encryptedData, new KeyManager(key));
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public static Byte[] Decrypt(Stream stream, String key)
+        {
+            if (stream == null || stream.Length == 0)
+            {
+                throw new ArgumentNullException("The stream is null");
+            }
+
+            if (String.IsNullOrEmpty(key))
+            {
+                throw new ArgumentNullException("The key is null or empty");
+            }
+
+            try
+            {
+                return _aesprovider.Decrypt(stream, new KeyManager(key));
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
     }

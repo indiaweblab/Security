@@ -54,6 +54,11 @@ namespace DotNetWheels.Security
             return DecryptStreamCore(encryptedData, km);
         }
 
+        public Byte[] Decrypt(Stream stream, KeyManager km)
+        {
+            return DecryptStreamCore(stream, km);
+        }
+
         private Byte[] EncryptStringCore(String rawText, KeyManager km)
         {
             if (rawText == null || rawText.Length <= 0)
@@ -98,9 +103,9 @@ namespace DotNetWheels.Security
 
                         encrypted = msEncrypt.ToArray();
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        throw ex;
+                        throw;
                     }
                     finally
                     {
@@ -231,9 +236,9 @@ namespace DotNetWheels.Security
                         csEncrypt.FlushFinalBlock();//this place can't lost.
                         encrypted = msEncrypt.ToArray();
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        throw ex;
+                        throw;
                     }
                     finally
                     {
@@ -288,8 +293,81 @@ namespace DotNetWheels.Security
 
                 var decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
 
-                var data = new Byte[encryptedData.Length - iv.Length];
-                Array.Copy(encryptedData, iv.Length, data, 0, data.Length);
+                using (MemoryStream msDecrypt = new MemoryStream(encryptedData, iv.Length, encryptedData.Length - iv.Length))
+                {
+                    CryptoStream csDecrypt = null;
+                    try
+                    {
+                        csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read);
+
+                        Byte[] buffer = new Byte[2048];
+                        Int32 read = 0;
+
+                        using (MemoryStream resultStream = new MemoryStream())
+                        {
+                            while ((read = csDecrypt.Read(buffer, 0, buffer.Length)) > 0)
+                            {
+                                resultStream.Write(buffer, 0, read);
+                            }
+
+                            decryptedData = resultStream.ToArray();
+                        }
+                    }
+                    catch
+                    {
+                        throw;
+                    }
+                    finally
+                    {
+                        if (csDecrypt != null) { csDecrypt.Dispose(); }
+                    }
+                }
+
+                aesAlg.Clear();
+            }
+
+            return decryptedData;
+        }
+
+        private Byte[] DecryptStreamCore(Stream stream, KeyManager km)
+        {
+            if (stream == null || stream.Length == 0)
+            {
+                throw new ArgumentNullException("The stream is null");
+            }
+
+            if (km == null)
+            {
+                throw new ArgumentNullException("km");
+            }
+
+            Byte[] decryptedData = null;
+
+            using (Aes aesAlg = Aes.Create())
+            {
+                aesAlg.KeySize = DefaultKeySize;
+                aesAlg.BlockSize = DefaultBlockSize;
+                aesAlg.Mode = DefaultCipherMode;
+                aesAlg.Padding = DefaultPaddingMode;
+
+                km.GenerateKey(DefaultKeySize);
+                aesAlg.Key = km.Key;
+
+                if (stream.Length < aesAlg.IV.Length)
+                {
+                    throw new ArgumentException("stream isn't a valid stream");
+                }
+
+                Byte[] iv = new Byte[aesAlg.IV.Length];
+                stream.Read(iv, 0, iv.Length);
+
+                aesAlg.IV = iv;
+
+                var decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
+
+                Byte[] data = new Byte[stream.Length - iv.Length];
+                stream.Read(data, 0, data.Length);
+                stream.Flush();
 
                 using (MemoryStream msDecrypt = new MemoryStream(data))
                 {
@@ -311,9 +389,9 @@ namespace DotNetWheels.Security
                             decryptedData = resultStream.ToArray();
                         }
                     }
-                    catch (Exception ex)
+                    catch
                     {
-                        throw ex;
+                        throw;
                     }
                     finally
                     {

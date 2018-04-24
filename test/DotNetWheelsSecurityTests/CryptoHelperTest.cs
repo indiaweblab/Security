@@ -57,5 +57,37 @@ namespace DotNetWheelsSecurityTests
 
             Assert.Equal("I love you, My Girl!", result);
         }
+
+        [Fact]
+        public void TestEncryptFile()
+        {
+            String filePath = @"F:\需要加密的文件\IMG_2571.JPG";
+            Byte[] encryptedData = null;
+
+            using (var fs = File.Open(filePath, FileMode.Open, FileAccess.Read))
+            {
+                encryptedData = CryptoHelper.Encrypt(fs, "1234");
+            }
+
+            Assert.True(encryptedData != null && encryptedData.Length > 0);
+
+            File.WriteAllBytes(@"F:\需要加密的文件\IMG_2571_enc.JPG", encryptedData);
+        }
+
+        [Fact]
+        public void TestDecryptFile()
+        {
+            String encryptedFilePath = @"F:\需要加密的文件\IMG_2571_enc.JPG";
+            Byte[] decryptedData = null;
+
+            using (var fs = File.Open(encryptedFilePath, FileMode.Open, FileAccess.Read))
+            {
+                decryptedData = CryptoHelper.Decrypt(fs, "1234");
+            }
+
+            Assert.True(decryptedData != null && decryptedData.Length > 0);
+
+            File.WriteAllBytes(@"F:\需要加密的文件\IMG_2571_enc_dec.JPG", decryptedData);
+        }
     }
 }
