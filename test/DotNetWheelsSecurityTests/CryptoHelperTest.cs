@@ -39,13 +39,13 @@ namespace DotNetWheelsSecurityTests
             Assert.NotNull(encryptedData);
 
             var result = String.Join(",", encryptedData);
-            Assert.Equal("52,56,101,50,54,53,100,98,49,50,49,102,99,48,99,56", result);
+            Assert.Equal("52,56,101,50,54,53,100,98,49,50,49,102,99,48,99,56,83,226,11,63,178,55,68,174,9,205,157,216,7,56,248,101,162,46,139,22,242,158,10,68,203,157,30,116,157,219,247,110", result);
         }
 
         [Fact]
         public void TestDecryptStream()
         {
-            String[] chars = "52,56,101,50,54,53,100,98,49,50,49,102,99,48,99,56".Split(',');
+            String[] chars = "52,56,101,50,54,53,100,98,49,50,49,102,99,48,99,56,83,226,11,63,178,55,68,174,9,205,157,216,7,56,248,101,162,46,139,22,242,158,10,68,203,157,30,116,157,219,247,110".Split(',');
             Byte[] encryptedData = new Byte[chars.Length];
             for (var i = 0; i < chars.Length; i++)
             {
@@ -53,7 +53,7 @@ namespace DotNetWheelsSecurityTests
             }
 
             var decryptedData = CryptoHelper.Decrypt(encryptedData, "123");
-            var result = Encoding.UTF8.GetString(decryptedData);
+            var result = Encoding.ASCII.GetString(decryptedData);
 
             Assert.Equal("I love you, My Girl!", result);
         }

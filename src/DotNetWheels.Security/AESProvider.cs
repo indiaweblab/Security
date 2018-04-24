@@ -11,20 +11,17 @@ namespace DotNetWheels.Security
 {
     internal class AESProvider : IAESProvider
     {
-        private const Int32 KeySize = 256;
-        private const Int32 BlockSize = 128;
+        private const Int32 DefaultKeySize = 256;
+        private const Int32 DefaultBlockSize = 128;
+        private const CipherMode DefaultCipherMode = CipherMode.CBC;
         private const PaddingMode DefaultPaddingMode = PaddingMode.PKCS7;
         private static IOneWayHash _hash = new OneWayHash();
 
-        public String Encrypt(String input, KeyManager km)
+        public String Encrypt(String rawText, KeyManager km)
         {
-            var encryptedData = EncryptStringToBytes_Aes(input, km);
+            var encryptedData = EncryptStringCore(rawText, km);
             String text = Convert.ToBase64String(encryptedData);
             return ReplaceText(text);
-        }
-        public Byte[] Encrypt(Stream input, KeyManager km)
-        {
-            return EncryptStream_Aes(input, km);
         }
 
         public String Decrypt(String encryptedString, KeyManager km)
@@ -35,7 +32,6 @@ namespace DotNetWheels.Security
             }
 
             Byte[] encrypted;
-
             try
             {
                 encrypted = Convert.FromBase64String(RestoreText(encryptedString));
@@ -45,16 +41,22 @@ namespace DotNetWheels.Security
                 return null;
             }
 
-            return DecryptStringFromBytes_Aes(encrypted, km);
-        }
-        public Byte[] Decrypt(Byte[] encryptedData, KeyManager km)
-        {
-            return DecryptStream_Aes(encryptedData, km);
+            return DecryptStringCore(encrypted, km);
         }
 
-        private Byte[] EncryptStringToBytes_Aes(String plainText, KeyManager km)
+        public Byte[] Encrypt(Stream stream, KeyManager km)
         {
-            if (plainText == null || plainText.Length <= 0)
+            return EncryptStreamCore(stream, km);
+        }
+
+        public Byte[] Decrypt(Byte[] encryptedData, KeyManager km)
+        {
+            return DecryptStreamCore(encryptedData, km);
+        }
+
+        private Byte[] EncryptStringCore(String rawText, KeyManager km)
+        {
+            if (rawText == null || rawText.Length <= 0)
             {
                 throw new ArgumentNullException("plainText");
             }
@@ -65,16 +67,18 @@ namespace DotNetWheels.Security
             }
 
             Byte[] encrypted = null;
-            Byte[] iv = new Byte[BlockSize / 8];
-            Byte[] bytes = Encoding.ASCII.GetBytes(_hash.GetSHA1(plainText, SHA1HashSize.SHA256));
+            Byte[] iv = new Byte[DefaultBlockSize / 8];
+            Byte[] bytes = Encoding.ASCII.GetBytes(_hash.GetSHA1(rawText, SHA1HashSize.SHA256));
             Array.Copy(bytes, iv, iv.Length);
 
             using (Aes aesAlg = Aes.Create())
             {
-                aesAlg.KeySize = KeySize;
-                aesAlg.BlockSize = BlockSize;
+                aesAlg.KeySize = DefaultKeySize;
+                aesAlg.BlockSize = DefaultBlockSize;
+                aesAlg.Mode = DefaultCipherMode;
+                aesAlg.Padding = DefaultPaddingMode;
 
-                km.GenerateKey(KeySize);
+                km.GenerateKey(DefaultKeySize);
                 aesAlg.Key = km.Key;
                 aesAlg.IV = iv;
 
@@ -89,73 +93,7 @@ namespace DotNetWheels.Security
 
                         using (var swEncrypt = new StreamWriter(csEncrypt, Encoding.UTF8))
                         {
-                            swEncrypt.Write(plainText);
-                        }
-
-                        encrypted = msEncrypt.ToArray();
-                    }
-                    catch (Exception ex)
-                    {
-                        throw ex;
-                    }
-                    finally
-                    {
-                        if (csEncrypt != null) { csEncrypt.Dispose(); }
-                    }
-                }
-
-                aesAlg.Clear();
-            }
-
-            Byte[] merged = new Byte[iv.Length + encrypted.Length];
-
-            Array.Copy(iv, merged, iv.Length);
-            Array.Copy(encrypted, 0, merged, iv.Length, encrypted.Length);
-
-            return merged;
-        }
-        private Byte[] EncryptStream_Aes(Stream stream, KeyManager km)
-        {
-            if (stream == null || !stream.CanRead)
-            {
-                throw new ArgumentNullException("The stream isn't support");
-            }
-
-            if (km == null)
-            {
-                throw new ArgumentNullException("The km is null");
-            }
-
-            Byte[] encrypted = null;
-            Byte[] iv = new Byte[BlockSize / 8];
-            Byte[] bytes = Encoding.ASCII.GetBytes(_hash.GetSHA1(stream, SHA1HashSize.SHA256));
-            Array.Copy(bytes, iv, iv.Length);
-
-            using (Aes aesAlg = Aes.Create())
-            {
-                aesAlg.KeySize = KeySize;
-                aesAlg.BlockSize = BlockSize;
-                aesAlg.Padding = PaddingMode.PKCS7;
-
-                km.GenerateKey(KeySize);
-                aesAlg.Key = km.Key;
-                aesAlg.IV = iv;
-
-                var encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
-
-                using (MemoryStream msEncrypt = new MemoryStream())
-                {
-                    CryptoStream csEncrypt = null;
-                    try
-                    {
-                        csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write);
-
-                        Byte[] buffer = new Byte[2048];
-                        Int32 read = 0;
-
-                        while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
-                        {
-                            csEncrypt.Write(buffer, 0, read);
+                            swEncrypt.Write(rawText);
                         }
 
                         encrypted = msEncrypt.ToArray();
@@ -181,7 +119,7 @@ namespace DotNetWheels.Security
             return merged;
         }
 
-        private String DecryptStringFromBytes_Aes(Byte[] encryptedData, KeyManager km)
+        private String DecryptStringCore(Byte[] encryptedData, KeyManager km)
         {
             if (encryptedData == null || encryptedData.Length <= 0)
             {
@@ -197,10 +135,12 @@ namespace DotNetWheels.Security
 
             using (Aes aesAlg = Aes.Create())
             {
-                aesAlg.KeySize = KeySize;
-                aesAlg.BlockSize = BlockSize;
+                aesAlg.KeySize = DefaultKeySize;
+                aesAlg.BlockSize = DefaultBlockSize;
+                aesAlg.Mode = DefaultCipherMode;
+                aesAlg.Padding = DefaultPaddingMode;
 
-                km.GenerateKey(KeySize);
+                km.GenerateKey(DefaultKeySize);
                 aesAlg.Key = km.Key;
 
                 if (encryptedData.Length < aesAlg.IV.Length)
@@ -209,10 +149,7 @@ namespace DotNetWheels.Security
                 }
 
                 Byte[] iv = new Byte[aesAlg.IV.Length];
-                for (var i = 0; i < iv.Length; i++)
-                {
-                    iv[i] = encryptedData[i]; // fuck this place, you can't use "aesAlg.IV[i] = cipherText[i];"
-                }
+                Array.Copy(encryptedData, iv, iv.Length);
 
                 aesAlg.IV = iv;
 
@@ -244,7 +181,78 @@ namespace DotNetWheels.Security
 
             return plaintext;
         }
-        private Byte[] DecryptStream_Aes(Byte[] encryptedData, KeyManager km)
+
+        private Byte[] EncryptStreamCore(Stream stream, KeyManager km)
+        {
+            if (stream == null || !stream.CanRead)
+            {
+                throw new ArgumentNullException("The stream isn't support");
+            }
+
+            if (km == null)
+            {
+                throw new ArgumentNullException("The km is null");
+            }
+
+            Byte[] encrypted = null;
+            Byte[] iv = new Byte[DefaultBlockSize / 8];
+            Byte[] bytes = Encoding.ASCII.GetBytes(_hash.GetSHA1(stream, SHA1HashSize.SHA256));
+            Array.Copy(bytes, iv, iv.Length);
+
+            using (Aes aesAlg = Aes.Create())
+            {
+                aesAlg.KeySize = DefaultKeySize;
+                aesAlg.BlockSize = DefaultBlockSize;
+                aesAlg.Mode = DefaultCipherMode;
+                aesAlg.Padding = DefaultPaddingMode;
+
+                km.GenerateKey(DefaultKeySize);
+                aesAlg.Key = km.Key;
+                aesAlg.IV = iv;
+
+                var encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
+
+                using (MemoryStream msEncrypt = new MemoryStream())
+                {
+                    CryptoStream csEncrypt = null;
+                    try
+                    {
+                        csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write);
+
+                        Byte[] buffer = new Byte[2048];
+                        Int32 read = 0;
+                        stream.Position = 0;
+
+                        while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+                        {
+                            csEncrypt.Write(buffer, 0, read);
+                        }
+
+                        csEncrypt.FlushFinalBlock();//this place can't lost.
+                        encrypted = msEncrypt.ToArray();
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
+                    finally
+                    {
+                        if (csEncrypt != null) { csEncrypt.Dispose(); }
+                    }
+                }
+
+                aesAlg.Clear();
+            }
+
+            Byte[] merged = new Byte[iv.Length + encrypted.Length];
+
+            Array.Copy(iv, merged, iv.Length);
+            Array.Copy(encrypted, 0, merged, iv.Length, encrypted.Length);
+
+            return merged;
+        }
+
+        private Byte[] DecryptStreamCore(Byte[] encryptedData, KeyManager km)
         {
             if (encryptedData == null || encryptedData.Length == 0)
             {
@@ -260,12 +268,12 @@ namespace DotNetWheels.Security
 
             using (Aes aesAlg = Aes.Create())
             {
+                aesAlg.KeySize = DefaultKeySize;
+                aesAlg.BlockSize = DefaultBlockSize;
+                aesAlg.Mode = DefaultCipherMode;
+                aesAlg.Padding = DefaultPaddingMode;
 
-                aesAlg.KeySize = KeySize;
-                aesAlg.BlockSize = BlockSize;
-                aesAlg.Padding = PaddingMode.None;
-
-                km.GenerateKey(KeySize);
+                km.GenerateKey(DefaultKeySize);
                 aesAlg.Key = km.Key;
 
                 if (encryptedData.Length < aesAlg.IV.Length)
@@ -274,16 +282,16 @@ namespace DotNetWheels.Security
                 }
 
                 Byte[] iv = new Byte[aesAlg.IV.Length];
-                for (var i = 0; i < iv.Length; i++)
-                {
-                    iv[i] = encryptedData[i]; // fuck this place, you can't use "aesAlg.IV[i] = cipherText[i];"
-                }
+                Array.Copy(encryptedData, iv, iv.Length);
 
                 aesAlg.IV = iv;
 
                 var decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
 
-                using (MemoryStream msDecrypt = new MemoryStream(encryptedData, aesAlg.IV.Length, encryptedData.Length - aesAlg.IV.Length))
+                var data = new Byte[encryptedData.Length - iv.Length];
+                Array.Copy(encryptedData, iv.Length, data, 0, data.Length);
+
+                using (MemoryStream msDecrypt = new MemoryStream(data))
                 {
                     CryptoStream csDecrypt = null;
                     try
@@ -319,13 +327,14 @@ namespace DotNetWheels.Security
             return decryptedData;
         }
 
-        private String ReplaceText(String text)
+        private String ReplaceText(String base64String)
         {
-            return text.Replace('+', '!').Replace('/', '-').Replace('=', '_');
+            return base64String.Replace('+', '!').Replace('/', '-').Replace('=', '_');
         }
-        private String RestoreText(String text)
+
+        private String RestoreText(String replacedText)
         {
-            return text.Replace('!', '+').Replace('-', '/').Replace('_', '=');
+            return replacedText.Replace('!', '+').Replace('-', '/').Replace('_', '=');
         }
     }
 }
