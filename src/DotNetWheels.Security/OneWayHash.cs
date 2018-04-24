@@ -10,11 +10,6 @@ namespace DotNetWheels.Security
 {
     internal class OneWayHash : IOneWayHash
     {
-
-        /// <summary>
-        /// 获取指定输入流的MD5值
-        /// </summary>
-        /// <param name="stream">输入流</param>
         public String GetMD5(Stream stream)
         {
             if (stream == null)
@@ -56,10 +51,6 @@ namespace DotNetWheels.Security
             return sb.ToString();
         }
 
-        /// <summary>
-        /// 获取输入字符串的MD5值
-        /// </summary>
-        /// <param name="input">输入字符串</param>
         public String GetMD5(String input)
         {
             if (String.IsNullOrEmpty(input))
@@ -103,12 +94,6 @@ namespace DotNetWheels.Security
             return sb.ToString();
         }
 
-        /// <summary>
-        /// 获取指定输入流的SHA1值
-        /// </summary>
-        /// <param name="stream">输入流</param>
-        /// <param name="size">算法所用的Hash大小</param>
-        /// <returns></returns>
         public String GetSHA1(Stream stream, SHA1HashSize size = SHA1HashSize.SHA160)
         {
             if (stream == null)
@@ -150,11 +135,6 @@ namespace DotNetWheels.Security
             return sb.ToString();
         }
 
-        /// <summary>
-        /// 获取输入字符串的SHA1值
-        /// </summary>
-        /// <param name="input">输入字符串</param>
-        /// <param name="size">算法所用的Hash大小</param>
         public String GetSHA1(String input, SHA1HashSize size = SHA1HashSize.SHA160)
         {
             if (String.IsNullOrEmpty(input))

@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace DotNetWheels.Security
 {
-
     public sealed class KeyManager
     {
         private static IOneWayHash _hash = new OneWayHash();
