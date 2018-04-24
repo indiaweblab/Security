@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{D6CB8E69-D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetWheels.Security", "src\DotNetWheels.Security\DotNetWheels.Security.csproj", "{AA51BE28-A976-4528-BE08-400B4AAF20EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetWheelsSecurityTests", "test\DotNetWheelsSecurityTests\DotNetWheelsSecurityTests.csproj", "{025224F2-DFDD-4763-896E-5CC089D681BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetWheelsSecurityTests", "test\DotNetWheelsSecurityTests\DotNetWheelsSecurityTests.csproj", "{025224F2-DFDD-4763-896E-5CC089D681BE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
