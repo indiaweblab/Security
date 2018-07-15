@@ -4,15 +4,16 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DotNetWheels.Core;
 
 namespace DotNetWheels.Security
 {
     public interface IAESProvider
     {
-        String Encrypt(String rawText, KeyManager km);
-        String Decrypt(String encryptedString, KeyManager km);
-        Byte[] Encrypt(Stream stream, KeyManager km);
-        Byte[] Decrypt(Byte[] encryptedData, KeyManager km);
-        Byte[] Decrypt(Stream stream, KeyManager km);
+        XResult<String> Encrypt(String rawText, KeyManager km);
+        XResult<String> Decrypt(String encryptedString, KeyManager km);
+        XResult<Byte[]> Encrypt(Stream stream, KeyManager km);
+        XResult<Byte[]> Decrypt(Byte[] encryptedData, KeyManager km);
+        XResult<Byte[]> Decrypt(Stream stream, KeyManager km);
     }
 }

@@ -6,6 +6,7 @@
     <Product>DotNetWheels</Product>
     <Description>DotNetWheels.</Description>
     <Version>1.0.6</Version>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -15,6 +16,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DotNetWheels.Core" Version="1.0.8" />
+  </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="icopy $(TargetDir) E:\lib\$(TargetName)\$(TargetFileName) -include .dll&#xD;&#xA;dotnet pack $(ProjectPath) --no-build --include-symbols -c Release -o E:\Packages" />

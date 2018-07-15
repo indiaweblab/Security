@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using DotNetWheels.Core;
 
 namespace DotNetWheels.Security
 {
@@ -17,63 +18,79 @@ namespace DotNetWheels.Security
         private const PaddingMode DefaultPaddingMode = PaddingMode.PKCS7;
         private static IOneWayHash _hash = new OneWayHash();
 
-        public String Encrypt(String rawText, KeyManager km)
+        public XResult<String> Encrypt(String rawText, KeyManager km)
         {
             var encryptedData = EncryptStringCore(rawText, km);
-            String text = Convert.ToBase64String(encryptedData);
-            return ReplaceText(text);
+            if (encryptedData.Success)
+            {
+                String text = Convert.ToBase64String(encryptedData.Value);
+                return ReplaceText(text);
+            }
+
+            return new XResult<String>(null, encryptedData.Errors.ToArray());
         }
 
-        public String Decrypt(String encryptedString, KeyManager km)
+        public XResult<String> Decrypt(String encryptedString, KeyManager km)
         {
             if (String.IsNullOrEmpty(encryptedString))
             {
-                return encryptedString;
+                return new XResult<String>(null, new ArgumentException("encryptedString"));
             }
 
-            Byte[] encrypted;
+            Byte[] encrypted = null;
             try
             {
-                encrypted = Convert.FromBase64String(RestoreText(encryptedString));
+                var restoreResult = RestoreText(encryptedString);
+                if (restoreResult.Success)
+                {
+                    encrypted = Convert.FromBase64String(restoreResult.Value);
+                }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return null;
+                return new XResult<String>(null, ex);
             }
 
             return DecryptStringCore(encrypted, km);
         }
 
-        public Byte[] Encrypt(Stream stream, KeyManager km)
+        public XResult<Byte[]> Encrypt(Stream stream, KeyManager km)
         {
             return EncryptStreamCore(stream, km);
         }
 
-        public Byte[] Decrypt(Byte[] encryptedData, KeyManager km)
+        public XResult<Byte[]> Decrypt(Byte[] encryptedData, KeyManager km)
         {
             return DecryptStreamCore(encryptedData, km);
         }
 
-        public Byte[] Decrypt(Stream stream, KeyManager km)
+        public XResult<Byte[]> Decrypt(Stream stream, KeyManager km)
         {
             return DecryptStreamCore(stream, km);
         }
 
-        private Byte[] EncryptStringCore(String rawText, KeyManager km)
+        private XResult<Byte[]> EncryptStringCore(String rawText, KeyManager km)
         {
             if (rawText == null || rawText.Length <= 0)
             {
-                throw new ArgumentNullException("plainText");
+                return new XResult<Byte[]>(null, new ArgumentNullException("rawText"));
             }
 
             if (km == null)
             {
-                throw new ArgumentNullException("km");
+                return new XResult<Byte[]>(null, new ArgumentNullException("km"));
             }
 
             Byte[] encrypted = null;
             Byte[] iv = new Byte[DefaultBlockSize / 8];
-            Byte[] bytes = Encoding.ASCII.GetBytes(_hash.GetSHA1(rawText, SHA1HashSize.SHA256));
+
+            XResult<String> sha1Result = _hash.GetSHA1(rawText, SHA1HashSize.SHA256);
+            if (!sha1Result.Success)
+            {
+                return new XResult<byte[]>(null, "IV generate failed");
+            }
+
+            Byte[] bytes = Encoding.ASCII.GetBytes(sha1Result.Value);
             Array.Copy(bytes, iv, iv.Length);
 
             using (Aes aesAlg = Aes.Create())
@@ -121,14 +138,14 @@ namespace DotNetWheels.Security
             Array.Copy(iv, merged, iv.Length);
             Array.Copy(encrypted, 0, merged, iv.Length, encrypted.Length);
 
-            return merged;
+            return new XResult<Byte[]>(merged);
         }
 
-        private String DecryptStringCore(Byte[] encryptedData, KeyManager km)
+        private XResult<String> DecryptStringCore(Byte[] encryptedData, KeyManager km)
         {
             if (encryptedData == null || encryptedData.Length <= 0)
             {
-                throw new ArgumentNullException("encryptedData");
+                return new XResult<string>(null, new ArgumentNullException("encryptedData"));
             }
 
             if (km == null)
@@ -184,10 +201,10 @@ namespace DotNetWheels.Security
                 aesAlg.Clear();
             }
 
-            return plaintext;
+            return new XResult<String>(plaintext);
         }
 
-        private Byte[] EncryptStreamCore(Stream stream, KeyManager km)
+        private XResult<Byte[]> EncryptStreamCore(Stream stream, KeyManager km)
         {
             if (stream == null || !stream.CanRead)
             {
@@ -201,7 +218,14 @@ namespace DotNetWheels.Security
 
             Byte[] encrypted = null;
             Byte[] iv = new Byte[DefaultBlockSize / 8];
-            Byte[] bytes = Encoding.ASCII.GetBytes(_hash.GetSHA1(stream, SHA1HashSize.SHA256));
+
+            var sha1Result = _hash.GetSHA1(stream, SHA1HashSize.SHA256);
+            if (!sha1Result.Success)
+            {
+                return new XResult<byte[]>(null, "IV generate failed");
+            }
+
+            Byte[] bytes = Encoding.ASCII.GetBytes(sha1Result.Value);
             Array.Copy(bytes, iv, iv.Length);
 
             using (Aes aesAlg = Aes.Create())
@@ -254,10 +278,10 @@ namespace DotNetWheels.Security
             Array.Copy(iv, merged, iv.Length);
             Array.Copy(encrypted, 0, merged, iv.Length, encrypted.Length);
 
-            return merged;
+            return new XResult<Byte[]>(merged);
         }
 
-        private Byte[] DecryptStreamCore(Byte[] encryptedData, KeyManager km)
+        private XResult<Byte[]> DecryptStreamCore(Byte[] encryptedData, KeyManager km)
         {
             if (encryptedData == null || encryptedData.Length == 0)
             {
@@ -283,7 +307,7 @@ namespace DotNetWheels.Security
 
                 if (encryptedData.Length < aesAlg.IV.Length)
                 {
-                    throw new ArgumentException("encryptedData isn't a valid data");
+
                 }
 
                 Byte[] iv = new Byte[aesAlg.IV.Length];
@@ -326,10 +350,10 @@ namespace DotNetWheels.Security
                 aesAlg.Clear();
             }
 
-            return decryptedData;
+            return new XResult<Byte[]>(decryptedData);
         }
 
-        private Byte[] DecryptStreamCore(Stream stream, KeyManager km)
+        private XResult<Byte[]> DecryptStreamCore(Stream stream, KeyManager km)
         {
             if (stream == null || stream.Length == 0)
             {
@@ -402,17 +426,17 @@ namespace DotNetWheels.Security
                 aesAlg.Clear();
             }
 
-            return decryptedData;
+            return new XResult<Byte[]>(decryptedData);
         }
 
-        private String ReplaceText(String base64String)
+        private XResult<String> ReplaceText(String base64String)
         {
-            return base64String.Replace('+', '!').Replace('/', '-').Replace('=', '_');
+            return new XResult<String>(base64String.Replace('+', '!').Replace('/', '-').Replace('=', '_'));
         }
 
-        private String RestoreText(String replacedText)
+        private XResult<String> RestoreText(String replacedText)
         {
-            return replacedText.Replace('!', '+').Replace('-', '/').Replace('_', '=');
+            return new XResult<String>(replacedText.Replace('!', '+').Replace('-', '/').Replace('_', '='));
         }
     }
 }

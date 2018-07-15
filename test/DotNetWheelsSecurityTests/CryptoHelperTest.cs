@@ -13,16 +13,16 @@ namespace DotNetWheelsSecurityTests
         public void TestEncryptString()
         {
             String rawText = "I love you!";
-            String result = CryptoHelper.Encrypt(rawText, "123");
-            Assert.Equal("YzIyZmUwMjgyYzdiNDViMOMa8uurpqh1aDwgMHqoBys_", result);
+            var result = CryptoHelper.Encrypt(rawText, "123");
+            Assert.Equal("YzIyZmUwMjgyYzdiNDViMOMa8uurpqh1aDwgMHqoBys_", result.Value);
         }
 
         [Fact]
         public void TestDecryptString()
         {
             String encryptedText = "YzIyZmUwMjgyYzdiNDViMOMa8uurpqh1aDwgMHqoBys_";
-            String rawText = CryptoHelper.Decrypt(encryptedText, "123");
-            Assert.Equal("I love you!", rawText);
+            var result = CryptoHelper.Decrypt(encryptedText, "123");
+            Assert.Equal("I love you!", result.Value);
         }
 
         [Fact]
@@ -33,7 +33,8 @@ namespace DotNetWheelsSecurityTests
             Byte[] encryptedData = null;
             using (var ms = new MemoryStream(rawData))
             {
-                encryptedData = CryptoHelper.Encrypt(ms, "123");
+                var data = CryptoHelper.Encrypt(ms, "123");
+                encryptedData = data.Value;
             }
 
             Assert.NotNull(encryptedData);
@@ -53,7 +54,7 @@ namespace DotNetWheelsSecurityTests
             }
 
             var decryptedData = CryptoHelper.Decrypt(encryptedData, "123");
-            var result = Encoding.ASCII.GetString(decryptedData);
+            var result = Encoding.ASCII.GetString(decryptedData.Value);
 
             Assert.Equal("I love you, My Girl!", result);
         }
@@ -66,7 +67,8 @@ namespace DotNetWheelsSecurityTests
 
             using (var fs = File.Open(filePath, FileMode.Open, FileAccess.Read))
             {
-                encryptedData = CryptoHelper.Encrypt(fs, "1234");
+                var data = CryptoHelper.Encrypt(fs, "1234");
+                encryptedData = data.Value;
             }
 
             Assert.True(encryptedData != null && encryptedData.Length > 0);
@@ -82,7 +84,8 @@ namespace DotNetWheelsSecurityTests
 
             using (var fs = File.Open(encryptedFilePath, FileMode.Open, FileAccess.Read))
             {
-                decryptedData = CryptoHelper.Decrypt(fs, "1234");
+                var data = CryptoHelper.Decrypt(fs, "1234");
+                decryptedData = data.Value;
             }
 
             Assert.True(decryptedData != null && decryptedData.Length > 0);
