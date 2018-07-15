@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="icopy $(TargetDir) E:\lib\$(TargetName)\$(TargetFileName) -include .dll&#xD;&#xA;dotnet pack $(ProjectPath) --no-build --include-symbols -c Release -o E:\Packages" />
+    <Exec Command="dotnet pack $(ProjectPath) --no-build --include-symbols -c $(ConfigurationName) -o D:\Packages" />
   </Target>
 
   <ItemGroup>
