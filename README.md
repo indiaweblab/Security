@@ -1,2 +1,2 @@
 # Security
-This repo contains class libraries related to encryption and decryption.
+This repo contains class libraries about encryption and decryption.
