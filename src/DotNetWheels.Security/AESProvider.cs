@@ -34,7 +34,7 @@ namespace DotNetWheels.Security
         {
             if (String.IsNullOrEmpty(encryptedString))
             {
-                return new XResult<string>(null, new ArgumentException("encryptedString"));
+                return new XResult<String>(null, new ArgumentException("encryptedString"));
             }
 
             Byte[] encrypted = null;
@@ -307,7 +307,7 @@ namespace DotNetWheels.Security
 
                 if (encryptedData.Length < aesAlg.IV.Length)
                 {
-                   
+
                 }
 
                 Byte[] iv = new Byte[aesAlg.IV.Length];
@@ -350,7 +350,7 @@ namespace DotNetWheels.Security
                 aesAlg.Clear();
             }
 
-            return decryptedData;
+            return new XResult<Byte[]>(decryptedData);
         }
 
         private XResult<Byte[]> DecryptStreamCore(Stream stream, KeyManager km)
@@ -426,17 +426,17 @@ namespace DotNetWheels.Security
                 aesAlg.Clear();
             }
 
-            return decryptedData;
+            return new XResult<Byte[]>(decryptedData);
         }
 
         private XResult<String> ReplaceText(String base64String)
         {
-            return base64String.Replace('+', '!').Replace('/', '-').Replace('=', '_');
+            return new XResult<String>(base64String.Replace('+', '!').Replace('/', '-').Replace('=', '_'));
         }
 
         private XResult<String> RestoreText(String replacedText)
         {
-            return replacedText.Replace('!', '+').Replace('-', '/').Replace('_', '=');
+            return new XResult<String>(replacedText.Replace('!', '+').Replace('-', '/').Replace('_', '='));
         }
     }
 }

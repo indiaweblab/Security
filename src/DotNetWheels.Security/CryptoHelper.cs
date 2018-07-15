@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using DotNetWheels.Core;
 
 namespace DotNetWheels.Security
 {
@@ -19,17 +20,17 @@ namespace DotNetWheels.Security
             _aesprovider = new AESProvider();
         }
 
-        public static String GetMD5(String input)
+        public static XResult<String> GetMD5(String input)
         {
             return _onewayhash.GetMD5(input);
         }
 
-        public static String GetSHA1(String input, SHA1HashSize size = SHA1HashSize.SHA160)
+        public static XResult<String> GetSHA1(String input, SHA1HashSize size = SHA1HashSize.SHA160)
         {
             return _onewayhash.GetSHA1(input, size);
         }
 
-        public static String Encrypt(String input, String key)
+        public static XResult<String> Encrypt(String input, String key)
         {
             if (String.IsNullOrEmpty(input))
             {
@@ -51,7 +52,7 @@ namespace DotNetWheels.Security
             }
         }
 
-        public static String Decrypt(String encryptedString, String key)
+        public static XResult<String> Decrypt(String encryptedString, String key)
         {
             if (String.IsNullOrEmpty(encryptedString))
             {
@@ -73,7 +74,7 @@ namespace DotNetWheels.Security
             }
         }
 
-        public static Byte[] Encrypt(Stream stream, String key)
+        public static XResult<Byte[]> Encrypt(Stream stream, String key)
         {
             if (stream == null)
             {
@@ -95,7 +96,7 @@ namespace DotNetWheels.Security
             }
         }
 
-        public static Byte[] Decrypt(Byte[] encryptedData, String key)
+        public static XResult<Byte[]> Decrypt(Byte[] encryptedData, String key)
         {
             if (encryptedData == null || encryptedData.Length == 0)
             {
@@ -117,7 +118,7 @@ namespace DotNetWheels.Security
             }
         }
 
-        public static Byte[] Decrypt(Stream stream, String key)
+        public static XResult<Byte[]> Decrypt(Stream stream, String key)
         {
             if (stream == null || stream.Length == 0)
             {
