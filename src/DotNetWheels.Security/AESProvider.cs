@@ -307,7 +307,7 @@ namespace DotNetWheels.Security
 
                 if (encryptedData.Length < aesAlg.IV.Length)
                 {
-
+                    return new XResult<Byte[]>(null, new ArgumentException("encryptedData isn't a valid data"));
                 }
 
                 Byte[] iv = new Byte[aesAlg.IV.Length];
