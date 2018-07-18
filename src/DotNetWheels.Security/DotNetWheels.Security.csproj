@@ -5,7 +5,7 @@
     <Authors>DotNetWheels</Authors>
     <Product>DotNetWheels</Product>
     <Description>DotNetWheels.</Description>
-    <Version>1.0.6</Version>
+    <Version>1.0.9</Version>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="icopy $(TargetDir) E:\lib\$(TargetName)\$(TargetFileName) -include .dll&#xD;&#xA;dotnet pack $(ProjectPath) --no-build --include-symbols -c Release -o E:\Packages" />
+    <Exec Command="dotnet pack $(ProjectPath) --no-build --include-symbols -c $(ConfigurationName) -o D:\Packages" />
   </Target>
 
 </Project>
