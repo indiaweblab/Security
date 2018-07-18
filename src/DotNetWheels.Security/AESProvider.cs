@@ -87,7 +87,7 @@ namespace DotNetWheels.Security
             XResult<String> sha1Result = _hash.GetSHA1(rawText, SHA1HashSize.SHA256);
             if (!sha1Result.Success)
             {
-                return new XResult<byte[]>(null, "IV generate failed");
+                return new XResult<Byte[]>(null, "IV generate failed");
             }
 
             Byte[] bytes = Encoding.ASCII.GetBytes(sha1Result.Value);
@@ -120,9 +120,9 @@ namespace DotNetWheels.Security
 
                         encrypted = msEncrypt.ToArray();
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        throw;
+                        return new XResult<Byte[]>(null, ex);
                     }
                     finally
                     {
@@ -145,12 +145,12 @@ namespace DotNetWheels.Security
         {
             if (encryptedData == null || encryptedData.Length <= 0)
             {
-                return new XResult<string>(null, new ArgumentNullException("encryptedData"));
+                return new XResult<String>(null, new ArgumentNullException("encryptedData"));
             }
 
             if (km == null)
             {
-                throw new ArgumentNullException("km");
+                return new XResult<String>(null, new ArgumentNullException("km"));
             }
 
             String plaintext = null;
@@ -167,7 +167,7 @@ namespace DotNetWheels.Security
 
                 if (encryptedData.Length < aesAlg.IV.Length)
                 {
-                    throw new ArgumentException("encryptedData isn't a valid data");
+                    return new XResult<String>(null, new ArgumentException("encryptedData isn't a valid data"));
                 }
 
                 Byte[] iv = new Byte[aesAlg.IV.Length];
@@ -190,7 +190,7 @@ namespace DotNetWheels.Security
                     }
                     catch (Exception ex)
                     {
-                        throw ex;
+                        return new XResult<String>(null, ex);
                     }
                     finally
                     {
@@ -208,12 +208,12 @@ namespace DotNetWheels.Security
         {
             if (stream == null || !stream.CanRead)
             {
-                throw new ArgumentNullException("The stream isn't support");
+                return new XResult<Byte[]>(null, new ArgumentNullException("The stream isn't support"));
             }
 
             if (km == null)
             {
-                throw new ArgumentNullException("The km is null");
+                return new XResult<Byte[]>(null, new ArgumentNullException("The km is null"));
             }
 
             Byte[] encrypted = null;
@@ -222,7 +222,7 @@ namespace DotNetWheels.Security
             var sha1Result = _hash.GetSHA1(stream, SHA1HashSize.SHA256);
             if (!sha1Result.Success)
             {
-                return new XResult<byte[]>(null, "IV generate failed");
+                return new XResult<Byte[]>(null, "IV generate failed");
             }
 
             Byte[] bytes = Encoding.ASCII.GetBytes(sha1Result.Value);
@@ -260,9 +260,9 @@ namespace DotNetWheels.Security
                         csEncrypt.FlushFinalBlock();//this place can't lost.
                         encrypted = msEncrypt.ToArray();
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        throw;
+                        return new XResult<Byte[]>(null, ex);
                     }
                     finally
                     {
@@ -285,12 +285,12 @@ namespace DotNetWheels.Security
         {
             if (encryptedData == null || encryptedData.Length == 0)
             {
-                throw new ArgumentNullException("The encryptedData is null");
+                return new XResult<Byte[]>(null, new ArgumentNullException("The encryptedData is null"));
             }
 
             if (km == null)
             {
-                throw new ArgumentNullException("km");
+                return new XResult<Byte[]>(null, new ArgumentNullException("km"));
             }
 
             Byte[] decryptedData = null;
@@ -337,9 +337,9 @@ namespace DotNetWheels.Security
                             decryptedData = resultStream.ToArray();
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        throw;
+                        return new XResult<Byte[]>(null, ex);
                     }
                     finally
                     {
@@ -357,12 +357,12 @@ namespace DotNetWheels.Security
         {
             if (stream == null || stream.Length == 0)
             {
-                throw new ArgumentNullException("The stream is null");
+                return new XResult<Byte[]>(null, new ArgumentNullException("The stream is null"));
             }
 
             if (km == null)
             {
-                throw new ArgumentNullException("km");
+                return new XResult<Byte[]>(null, new ArgumentNullException("km"));
             }
 
             Byte[] decryptedData = null;
@@ -379,7 +379,7 @@ namespace DotNetWheels.Security
 
                 if (stream.Length < aesAlg.IV.Length)
                 {
-                    throw new ArgumentException("stream isn't a valid stream");
+                    return new XResult<Byte[]>(null, new ArgumentException("stream isn't a valid stream"));
                 }
 
                 Byte[] iv = new Byte[aesAlg.IV.Length];
@@ -413,9 +413,9 @@ namespace DotNetWheels.Security
                             decryptedData = resultStream.ToArray();
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        throw;
+                        return new XResult<Byte[]>(null, ex);
                     }
                     finally
                     {
