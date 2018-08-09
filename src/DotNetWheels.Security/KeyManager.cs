@@ -12,7 +12,7 @@ namespace DotNetWheels.Security
     {
         private static IOneWayHash _hash = new OneWayHash();
         private Rfc2898DeriveBytes _rfcKey;
-        private XError _innerError;
+        private Exception _innerException;
 
         public Byte[] Key { get; private set; }
 
@@ -20,9 +20,10 @@ namespace DotNetWheels.Security
         {
             if (key == null || key.Length == 0)
             {
-                _innerError = new XError(new ArgumentNullException("key"));
+                _innerException = new ArgumentNullException("key");
                 return;
             }
+
             var sha1Result = _hash.GetSHA1(key, SHA1HashSize.SHA512);
             if (sha1Result.Success)
             {
@@ -31,15 +32,15 @@ namespace DotNetWheels.Security
             }
             else
             {
-                _innerError = sha1Result.Errors[0];
+                _innerException = sha1Result.Exceptions[0];
             }
         }
 
         public XResult<Boolean> GenerateKey(Int32 keySize)
         {
-            if (_innerError != null)
+            if (_innerException != null)
             {
-                return new XResult<Boolean>(false, _innerError);
+                return new XResult<Boolean>(false, _innerException);
             }
 
             if (_rfcKey == null)

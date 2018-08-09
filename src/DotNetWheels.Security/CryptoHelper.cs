@@ -34,21 +34,21 @@ namespace DotNetWheels.Security
         {
             if (String.IsNullOrEmpty(input))
             {
-                throw new ArgumentNullException("The input value is null");
+                return new XResult<String>(null, new ArgumentNullException("The input value is null"));
             }
 
             if (String.IsNullOrEmpty(key))
             {
-                throw new ArgumentNullException("The key is null");
+                return new XResult<String>(null, new ArgumentNullException("The key is null"));
             }
 
             try
             {
                 return _aesprovider.Encrypt(input, new KeyManager(key));
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return null;
+                return new XResult<String>(null, ex);
             }
         }
 
@@ -56,21 +56,21 @@ namespace DotNetWheels.Security
         {
             if (String.IsNullOrEmpty(encryptedString))
             {
-                throw new ArgumentNullException("The encrypted value is null");
+                return new XResult<String>(null, new ArgumentNullException("The encrypted value is null"));
             }
 
             if (String.IsNullOrEmpty(key))
             {
-                throw new ArgumentNullException("The key is null");
+                return new XResult<String>(null, new ArgumentNullException("The key is null"));
             }
 
             try
             {
                 return _aesprovider.Decrypt(encryptedString, new KeyManager(key));
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return null;
+                return new XResult<String>(null, ex);
             }
         }
 
@@ -78,21 +78,21 @@ namespace DotNetWheels.Security
         {
             if (stream == null)
             {
-                throw new ArgumentNullException("The stream is null");
+                return new XResult<Byte[]>(null, new ArgumentNullException("The stream is null"));
             }
 
             if (String.IsNullOrEmpty(key))
             {
-                throw new ArgumentNullException("The key is null");
+                return new XResult<Byte[]>(null, new ArgumentNullException("The key is null"));
             }
 
             try
             {
                 return _aesprovider.Encrypt(stream, new KeyManager(key));
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return null;
+                return new XResult<Byte[]>(null, ex);
             }
         }
 
@@ -100,21 +100,21 @@ namespace DotNetWheels.Security
         {
             if (encryptedData == null || encryptedData.Length == 0)
             {
-                throw new ArgumentNullException("The encrypted value is null");
+                return new XResult<Byte[]>(null, new ArgumentNullException("The encrypted value is null"));
             }
 
             if (String.IsNullOrEmpty(key))
             {
-                throw new ArgumentNullException("The key is null");
+                return new XResult<Byte[]>(null, new ArgumentNullException("The key is null"));
             }
 
             try
             {
                 return _aesprovider.Decrypt(encryptedData, new KeyManager(key));
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return null;
+                return new XResult<Byte[]>(null, ex);
             }
         }
 
@@ -122,21 +122,21 @@ namespace DotNetWheels.Security
         {
             if (stream == null || stream.Length == 0)
             {
-                throw new ArgumentNullException("The stream is null");
+                return new XResult<Byte[]>(null, new ArgumentNullException("The stream is null"));
             }
 
             if (String.IsNullOrEmpty(key))
             {
-                throw new ArgumentNullException("The key is null or empty");
+                return new XResult<Byte[]>(null, new ArgumentNullException("The key is null or empty"));
             }
 
             try
             {
                 return _aesprovider.Decrypt(stream, new KeyManager(key));
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return null;
+                return new XResult<Byte[]>(null, ex);
             }
         }
 
