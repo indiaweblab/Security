@@ -40,7 +40,7 @@ namespace DotNetWheels.Security
 
             if (result == null || result.Length == 0)
             {
-                return new XResult<String>(null, "the computed result is null");
+                return new XResult<String>(null, new ArgumentNullException("the computed result is null"));
             }
 
             StringBuilder sb = new StringBuilder();
@@ -124,7 +124,7 @@ namespace DotNetWheels.Security
 
             if (result == null || result.Length == 0)
             {
-                return new XResult<String>(null, "the computed result is null"); ;
+                return new XResult<String>(null, new ArgumentNullException("the computed result is null")); ;
             }
 
             StringBuilder sb = new StringBuilder();
@@ -167,7 +167,7 @@ namespace DotNetWheels.Security
 
             if (result == null || result.Length == 0)
             {
-                return new XResult<String>(null, "the computed result is null");
+                return new XResult<String>(null, new ArgumentNullException("the computed result is null"));
             }
 
             StringBuilder sb = new StringBuilder();
@@ -225,7 +225,7 @@ namespace DotNetWheels.Security
 
             if (result == null || result.Length == 0)
             {
-                return new XResult<String>(null, "the computed result is null");
+                return new XResult<String>(null, new ArgumentNullException("the computed result is null"));
             }
 
             StringBuilder sb = new StringBuilder();
@@ -283,7 +283,7 @@ namespace DotNetWheels.Security
 
             if (result == null || result.Length == 0)
             {
-                return new XResult<String>(null, "the computed result is null");
+                return new XResult<String>(null, new ArgumentNullException("the computed result is null"));
             }
 
             return new XResult<String>(Convert.ToBase64String(result));

@@ -27,7 +27,7 @@ namespace DotNetWheels.Security
                 return ReplaceText(text);
             }
 
-            return new XResult<String>(null, encryptedData.Errors.ToArray());
+            return new XResult<String>(null, encryptedData.Exceptions.ToArray());
         }
 
         public XResult<String> Decrypt(String encryptedString, KeyManager km)
@@ -87,7 +87,7 @@ namespace DotNetWheels.Security
             XResult<String> sha1Result = _hash.GetSHA1(rawText, SHA1HashSize.SHA256);
             if (!sha1Result.Success)
             {
-                return new XResult<Byte[]>(null, "IV generate failed");
+                return new XResult<Byte[]>(null, new CryptographicException("IV generate failed"));
             }
 
             Byte[] bytes = Encoding.ASCII.GetBytes(sha1Result.Value);
@@ -222,7 +222,7 @@ namespace DotNetWheels.Security
             var sha1Result = _hash.GetSHA1(stream, SHA1HashSize.SHA256);
             if (!sha1Result.Success)
             {
-                return new XResult<Byte[]>(null, "IV generate failed");
+                return new XResult<Byte[]>(null, new CryptographicException("IV generate failed"));
             }
 
             Byte[] bytes = Encoding.ASCII.GetBytes(sha1Result.Value);
