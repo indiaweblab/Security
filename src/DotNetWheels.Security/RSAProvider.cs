@@ -268,6 +268,47 @@ namespace DotNetWheels.Security
             }
         }
 
+        public XResult<String> MakeSign(String signContent, String privateKeyPem, HashAlgorithmName algName, String charset)
+        {
+            if (String.IsNullOrWhiteSpace(signContent))
+            {
+                return new XResult<String>(null, new ArgumentNullException("signContent is null"));
+            }
+
+            if (String.IsNullOrWhiteSpace(privateKeyPem))
+            {
+                return new XResult<String>(null, new ArgumentNullException("privateKeyPem is null"));
+            }
+
+            RSA rsa = null;
+            try
+            {
+                rsa = CreateRSAFromPrivateKey(privateKeyPem);
+            }
+            catch (Exception ex)
+            {
+                return new XResult<String>(null, ex);
+            }
+
+            if (rsa == null)
+            {
+                return new XResult<String>(null, new CryptographicException("CreateRSAFromPrivateKey(privateKeyPem) returns null"));
+            }
+
+            Byte[] signContentData = null;
+            try
+            {
+                signContentData = Encoding.GetEncoding(charset).GetBytes(signContent);
+                var signData = rsa.SignData(signContentData, algName, RSASignaturePadding.Pkcs1);
+                String signString = Convert.ToBase64String(signData);
+                return new XResult<String>(signString);
+            }
+            catch (Exception ex)
+            {
+                return new XResult<String>(null, ex);
+            }
+        }
+
         public XResult<Boolean> VerifySign(String signNeedToVerfy, String signContent, String publicKeyPem, HashAlgorithmName algName, String charset)
         {
             RSA rsa = null;
@@ -285,13 +326,13 @@ namespace DotNetWheels.Security
                 return new XResult<Boolean>(false, new CryptographicException("CreateRSAFromPublicKey(publicKeyPem) returns null"));
             }
 
-            Byte[] data = null;
-            Byte[] signData = null;
+            Byte[] signContentData = null;
+            Byte[] signNeedToVerifyData = null;
             try
             {
-                data = Encoding.GetEncoding(charset).GetBytes(signContent);
-                signData = Convert.FromBase64String(signNeedToVerfy);
-                var result = rsa.VerifyData(data, signData, algName, RSASignaturePadding.Pkcs1);
+                signContentData = Encoding.GetEncoding(charset).GetBytes(signContent);
+                signNeedToVerifyData = Convert.FromBase64String(signNeedToVerfy);
+                var result = rsa.VerifyData(signContentData, signNeedToVerifyData, algName, RSASignaturePadding.Pkcs1);
                 return new XResult<Boolean>(result);
             }
             catch (Exception ex)

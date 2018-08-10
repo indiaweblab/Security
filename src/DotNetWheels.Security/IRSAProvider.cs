@@ -13,6 +13,7 @@ namespace DotNetWheels.Security
         XResult<Byte[]> Encrypt(Stream stream, String publicKeyPem);
         XResult<String> Decrypt(String encryptedString, String privateKeyPem, String charset);
         XResult<Byte[]> Decrypt(Stream stream, String privateKeyPem);
+        XResult<String> MakeSign(String signContent, String privateKeyPem, HashAlgorithmName algName, String charset);
         XResult<Boolean> VerifySign(String signNeedToVerify, String signContent, String publicKeyPem, HashAlgorithmName algName, String charset);
     }
 }

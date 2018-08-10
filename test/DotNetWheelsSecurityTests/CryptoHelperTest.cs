@@ -156,5 +156,17 @@ L9JUT4+BgxeLepXtkolhAkEA2V7er7fnEuL0+kKIjmOm5F3kvMIDh9YC1JwLGSvu
 
             Assert.Equal(rawText, decResult.Value);
         }
+
+        [Fact]
+        public void TestMakeAndVerifySign()
+        {
+            String signContent = "a=1&b=c&d=#s&e=2.0&k=ку";
+
+            var signResult = CryptoHelper.MakeSign(signContent, _privateKey, HashAlgorithmName.SHA256);
+            Assert.True(signResult.Success);
+
+            var verifyResult = CryptoHelper.VerifySign(signResult.Value, signContent, _publicKey, HashAlgorithmName.SHA256);
+            Assert.True(verifyResult.Success && verifyResult.Value);
+        }
     }
 }

@@ -144,5 +144,40 @@ namespace DotNetWheels.Security
         {
             return _rsaProvider.Decrypt(stream, privateKeyPem);
         }
+
+        public static XResult<String> MakeSign(String signContent, String privateKeyPem, HashAlgorithmName algName)
+        {
+            if (String.IsNullOrWhiteSpace(signContent))
+            {
+                return new XResult<String>(null, new ArgumentNullException("signContent is null"));
+            }
+
+            if (String.IsNullOrWhiteSpace(privateKeyPem))
+            {
+                return new XResult<String>(null, new ArgumentNullException("privateKeyPem is null"));
+            }
+
+            return _rsaProvider.MakeSign(signContent, privateKeyPem, algName, "UTF-8");
+        }
+
+        public static XResult<Boolean> VerifySign(String signNeedToVerify, String signContent, String publicKeyPem, HashAlgorithmName algName)
+        {
+            if (String.IsNullOrWhiteSpace(signNeedToVerify))
+            {
+                return new XResult<Boolean>(false, new ArgumentNullException("signNeedToVerify is null"));
+            }
+
+            if (String.IsNullOrWhiteSpace(signContent))
+            {
+                return new XResult<Boolean>(false, new ArgumentNullException("signContent is null"));
+            }
+
+            if (String.IsNullOrWhiteSpace(publicKeyPem))
+            {
+                return new XResult<Boolean>(false, new ArgumentNullException("publicKeyPem is null"));
+            }
+
+            return _rsaProvider.VerifySign(signNeedToVerify, signContent, publicKeyPem, algName, "UTF-8");
+        }
     }
 }
