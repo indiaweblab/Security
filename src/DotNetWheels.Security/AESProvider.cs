@@ -128,7 +128,7 @@ namespace DotNetWheels.Security
             Byte[] encrypted = null;
             Byte[] iv = new Byte[DefaultBlockSize / 8];
 
-            var sha1Result = _hash.GetSHA1(stream, SHA1HashSize.SHA256);
+            var sha1Result = _hash.GetSHA(stream, HashAlgorithmName.SHA256);
             if (!sha1Result.Success)
             {
                 return new XResult<Byte[]>(null, new CryptographicException("IV generate failed"));

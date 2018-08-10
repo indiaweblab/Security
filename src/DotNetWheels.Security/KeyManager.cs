@@ -24,7 +24,7 @@ namespace DotNetWheels.Security
                 return;
             }
 
-            var sha1Result = _hash.GetSHA1(key, SHA1HashSize.SHA512);
+            var sha1Result = _hash.GetSHA(key, HashAlgorithmName.SHA256);
             if (sha1Result.Success)
             {
                 Byte[] salt = Encoding.ASCII.GetBytes(sha1Result.Value);
