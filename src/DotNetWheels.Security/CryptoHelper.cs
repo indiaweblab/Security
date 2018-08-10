@@ -27,9 +27,14 @@ namespace DotNetWheels.Security
             return _onewayhash.GetMD5(input);
         }
 
-        public static XResult<String> GetSHA1(String input, SHA1HashSize size = SHA1HashSize.SHA160)
+        public static XResult<String> GetSHA1(String input)
         {
-            return _onewayhash.GetSHA1(input, size);
+            return _onewayhash.GetSHA(input, HashAlgorithmName.SHA1);
+        }
+
+        public static XResult<String> GetSHA256(String input)
+        {
+            return _onewayhash.GetSHA(input, HashAlgorithmName.SHA256);
         }
 
         public static XResult<String> AESEncrypt(String input, String key)
@@ -120,24 +125,24 @@ namespace DotNetWheels.Security
             }
         }
 
-        public static XResult<String> RSAEncrypt(String rawText, String publicKeyPem, SHA1HashSize hashSize, String charset = "UTF-8")
+        public static XResult<String> RSAEncrypt(String rawText, String publicKeyPem, String charset = "UTF-8")
         {
-            return _rsaProvider.Encrypt(rawText, publicKeyPem, hashSize, charset);
+            return _rsaProvider.Encrypt(rawText, publicKeyPem, charset);
         }
 
-        public static XResult<Byte[]> RSAEncrypt(Stream stream, String publicKeyPem, SHA1HashSize hashSize)
+        public static XResult<Byte[]> RSAEncrypt(Stream stream, String publicKeyPem)
         {
-            return _rsaProvider.Encrypt(stream, publicKeyPem, hashSize);
+            return _rsaProvider.Encrypt(stream, publicKeyPem);
         }
 
-        public static XResult<String> RSADecrypt(String encryptedString, String privateKeyPem, SHA1HashSize hashSize, String charset = "UTF-8")
+        public static XResult<String> RSADecrypt(String encryptedString, String privateKeyPem, String charset = "UTF-8")
         {
-            return _rsaProvider.Decrypt(encryptedString, privateKeyPem, hashSize, charset);
+            return _rsaProvider.Decrypt(encryptedString, privateKeyPem, charset);
         }
 
-        public static XResult<Byte[]> RSADecrypt(Stream stream, String privateKeyPem, SHA1HashSize hashSize)
+        public static XResult<Byte[]> RSADecrypt(Stream stream, String privateKeyPem)
         {
-            return _rsaProvider.Decrypt(stream, privateKeyPem, hashSize);
+            return _rsaProvider.Decrypt(stream, privateKeyPem);
         }
     }
 }

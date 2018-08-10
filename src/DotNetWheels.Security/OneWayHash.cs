@@ -95,11 +95,11 @@ namespace DotNetWheels.Security
             return new XResult<String>(sb.ToString());
         }
 
-        public XResult<String> GetSHA1(Stream stream, SHA1HashSize size = SHA1HashSize.SHA160)
+        public XResult<String> GetSHA(Stream stream, HashAlgorithmName algName)
         {
             if (stream == null || stream.Length == 0)
             {
-                return new XResult<string>(null, new ArgumentNullException("stream"));
+                return new XResult<String>(null, new ArgumentNullException("stream"));
             }
 
             Byte[] result = null;
@@ -107,7 +107,7 @@ namespace DotNetWheels.Security
 
             try
             {
-                sh1csp = GetSHA1Algorithm(size);
+                sh1csp = GetSHA1Algorithm(algName);
                 result = sh1csp.ComputeHash(stream);
             }
             catch (Exception ex)
@@ -136,7 +136,7 @@ namespace DotNetWheels.Security
             return new XResult<String>(sb.ToString());
         }
 
-        public XResult<String> GetSHA1(String input, SHA1HashSize size = SHA1HashSize.SHA160)
+        public XResult<String> GetSHA(String input, HashAlgorithmName algName)
         {
             if (String.IsNullOrEmpty(input))
             {
@@ -150,7 +150,7 @@ namespace DotNetWheels.Security
             try
             {
                 data = Encoding.UTF8.GetBytes(input);
-                sh1csp = GetSHA1Algorithm(size);
+                sh1csp = GetSHA1Algorithm(algName);
                 result = sh1csp.ComputeHash(data);
             }
             catch (Exception ex)
@@ -211,11 +211,11 @@ namespace DotNetWheels.Security
                 return new XResult<String>(null, ex);
             }
 
-            HMACSHA1 hmac = new HMACSHA1(keyData);
+            HMACSHA1 hmac = null;
             Byte[] result = null;
-
             try
             {
+                hmac = new HMACSHA1(keyData);
                 result = hmac.ComputeHash(inputData);
             }
             catch (Exception ex)
@@ -225,7 +225,7 @@ namespace DotNetWheels.Security
 
             if (result == null || result.Length == 0)
             {
-                return new XResult<String>(null, new ArgumentNullException("the computed result is null"));
+                return new XResult<String>(null, new ArgumentNullException("hmac.ComputeHash(inputData) returns null"));
             }
 
             StringBuilder sb = new StringBuilder();
@@ -269,11 +269,12 @@ namespace DotNetWheels.Security
                 return new XResult<String>(null, ex);
             }
 
-            HMACSHA1 hmac = new HMACSHA1(keyData);
+            HMACSHA1 hmac = null;
             Byte[] result = null;
 
             try
             {
+                hmac = new HMACSHA1(keyData);
                 result = hmac.ComputeHash(inputData);
             }
             catch (Exception ex)
@@ -289,16 +290,22 @@ namespace DotNetWheels.Security
             return new XResult<String>(Convert.ToBase64String(result));
         }
 
-        private HashAlgorithm GetSHA1Algorithm(SHA1HashSize size)
+        private HashAlgorithm GetSHA1Algorithm(HashAlgorithmName algName)
         {
-            switch (size)
+            switch (algName.Name)
             {
-                case SHA1HashSize.SHA256:
-                    return new SHA256Managed();
-                case SHA1HashSize.SHA512:
-                    return new SHA512Managed();
+                case "SHA512":
+                    return SHA512.Create();
+                case "SHA384":
+                    return SHA384.Create();
+                case "SHA256":
+                    return SHA256.Create();
+                case "SHA1":
+                    return SHA1.Create();
+                case "MD5":
+                    return MD5.Create();
                 default:
-                    return new SHA1Managed();
+                    throw new InvalidOperationException();
             }
         }
     }

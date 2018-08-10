@@ -9,7 +9,7 @@ namespace DotNetWheels.Security
 {
     internal class RSAProvider : IRSAProvider
     {
-        public XResult<String> Encrypt(String rawText, String publicKeyPem, SHA1HashSize hashSize, String charset)
+        public XResult<String> Encrypt(String rawText, String publicKeyPem, String charset)
         {
             if (String.IsNullOrWhiteSpace(rawText))
             {
@@ -40,7 +40,7 @@ namespace DotNetWheels.Security
             try
             {
                 ms = new MemoryStream(inputData);
-                var result = Encrypt(ms, publicKeyPem, hashSize);
+                var result = Encrypt(ms, publicKeyPem);
                 if (result.Success)
                 {
                     String encryptedString = Convert.ToBase64String(result.Value);
@@ -61,7 +61,7 @@ namespace DotNetWheels.Security
             }
         }
 
-        public XResult<Byte[]> Encrypt(Stream stream, String publicKeyPem, SHA1HashSize hashSize)
+        public XResult<Byte[]> Encrypt(Stream stream, String publicKeyPem)
         {
             if (stream == null || stream.Length == 0 || !stream.CanRead)
             {
@@ -85,7 +85,7 @@ namespace DotNetWheels.Security
 
             if (rsa == null)
             {
-                return new XResult<Byte[]>(null, new CryptographicException("CreateRSAFromPublicKey(publicKeyPem)"));
+                return new XResult<Byte[]>(null, new CryptographicException("CreateRSAFromPublicKey(publicKeyPem) returns null"));
             }
 
             //这个地方不知道为啥要减掉11，不减的话会报错
@@ -132,7 +132,7 @@ namespace DotNetWheels.Security
             }
         }
 
-        public XResult<String> Decrypt(String encryptedString, String privateKeyPem, SHA1HashSize hashSize, String charset)
+        public XResult<String> Decrypt(String encryptedString, String privateKeyPem, String charset)
         {
             if (String.IsNullOrWhiteSpace(encryptedString))
             {
@@ -163,7 +163,7 @@ namespace DotNetWheels.Security
             try
             {
                 ms = new MemoryStream(inputData);
-                var result = Decrypt(ms, privateKeyPem, hashSize);
+                var result = Decrypt(ms, privateKeyPem);
                 if (result.Success)
                 {
                     try
@@ -191,7 +191,7 @@ namespace DotNetWheels.Security
             }
         }
 
-        public XResult<Byte[]> Decrypt(Stream stream, String privateKeyPem, SHA1HashSize hashSize)
+        public XResult<Byte[]> Decrypt(Stream stream, String privateKeyPem)
         {
             if (stream == null || stream.Length == 0)
             {
@@ -215,7 +215,7 @@ namespace DotNetWheels.Security
 
             if (rsa == null)
             {
-                return new XResult<Byte[]>(null, new CryptographicException("CreateRSAFromPrivateKey(privateKeyPem)"));
+                return new XResult<Byte[]>(null, new CryptographicException("CreateRSAFromPrivateKey(privateKeyPem) returns null"));
             }
 
             if (stream.Length > 0 && stream.CanSeek && stream.Position != 0)
@@ -265,6 +265,38 @@ namespace DotNetWheels.Security
             {
                 dataStream.Dispose();
                 cryptoStream.Dispose();
+            }
+        }
+
+        public XResult<Boolean> VerifySign(String signNeedToVerfy, String signContent, String publicKeyPem, HashAlgorithmName algName, String charset)
+        {
+            RSA rsa = null;
+            try
+            {
+                rsa = CreateRSAFromPublicKey(publicKeyPem);
+            }
+            catch (Exception ex)
+            {
+                return new XResult<Boolean>(false, ex);
+            }
+
+            if (rsa == null)
+            {
+                return new XResult<Boolean>(false, new CryptographicException("CreateRSAFromPublicKey(publicKeyPem) returns null"));
+            }
+
+            Byte[] data = null;
+            Byte[] signData = null;
+            try
+            {
+                data = Encoding.GetEncoding(charset).GetBytes(signContent);
+                signData = Convert.FromBase64String(signNeedToVerfy);
+                var result = rsa.VerifyData(data, signData, algName, RSASignaturePadding.Pkcs1);
+                return new XResult<Boolean>(result);
+            }
+            catch (Exception ex)
+            {
+                return new XResult<Boolean>(false, ex);
             }
         }
 

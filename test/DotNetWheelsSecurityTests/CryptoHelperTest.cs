@@ -2,6 +2,7 @@ using DotNetWheels.Security;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Security.Cryptography;
 using System.Text;
 using Xunit;
 
@@ -34,13 +35,13 @@ qoOmjXaCv58CSRAlAQIDAQAB";
         {
             String rawText = "I love you!";
             var result = CryptoHelper.AESEncrypt(rawText, "123");
-            Assert.Equal("YzIyZmUwMjgyYzdiNDViMIrIO6DvAUrhBccg1Bgo!O0_", result.Value);
+            Assert.Equal("YzIyZmUwMjgyYzdiNDViMBFY0JT2IiS-8oRE1oR4UKQ_", result.Value);
         }
 
         [Fact]
         public void TestAESDecryptString()
         {
-            String encryptedText = "YzIyZmUwMjgyYzdiNDViMIrIO6DvAUrhBccg1Bgo!O0_";
+            String encryptedText = "YzIyZmUwMjgyYzdiNDViMBFY0JT2IiS-8oRE1oR4UKQ_";
             var result = CryptoHelper.AESDecrypt(encryptedText, "123");
             Assert.Equal("I love you!", result.Value);
         }
@@ -60,13 +61,13 @@ qoOmjXaCv58CSRAlAQIDAQAB";
             Assert.NotNull(encryptedData);
 
             var result = String.Join(",", encryptedData);
-            Assert.Equal("52,56,101,50,54,53,100,98,49,50,49,102,99,48,99,56,83,226,11,63,178,55,68,174,9,205,157,216,7,56,248,101,162,46,139,22,242,158,10,68,203,157,30,116,157,219,247,110", result);
+            Assert.Equal("52,56,101,50,54,53,100,98,49,50,49,102,99,48,99,56,157,22,200,98,25,57,147,186,0,106,97,243,137,181,71,47,66,157,70,190,25,106,218,69,50,112,107,149,181,202,36,104", result);
         }
 
         [Fact]
         public void TestAESDecryptStream()
         {
-            String[] chars = "52,56,101,50,54,53,100,98,49,50,49,102,99,48,99,56,83,226,11,63,178,55,68,174,9,205,157,216,7,56,248,101,162,46,139,22,242,158,10,68,203,157,30,116,157,219,247,110".Split(',');
+            String[] chars = "52,56,101,50,54,53,100,98,49,50,49,102,99,48,99,56,157,22,200,98,25,57,147,186,0,106,97,243,137,181,71,47,66,157,70,190,25,106,218,69,50,112,107,149,181,202,36,104".Split(',');
             Byte[] encryptedData = new Byte[chars.Length];
             for (var i = 0; i < chars.Length; i++)
             {
@@ -120,10 +121,10 @@ qoOmjXaCv58CSRAlAQIDAQAB";
         public void TestRSAEncryptAndDecryptText()
         {
             String rawText = "I love you!";
-            var encResult = CryptoHelper.RSAEncrypt(rawText, _publicKey, SHA1HashSize.SHA256);
+            var encResult = CryptoHelper.RSAEncrypt(rawText, _publicKey);
             Assert.True(encResult.Success);
 
-            var decResult = CryptoHelper.RSADecrypt(encResult.Value, _privateKey, SHA1HashSize.SHA256);
+            var decResult = CryptoHelper.RSADecrypt(encResult.Value, _privateKey);
             Assert.True(decResult.Success);
             String decText = decResult.Value;
 
@@ -147,10 +148,10 @@ TM2fCsUO06fRQu8bO1A1janhLz3K0DU24jw8RzCMckHE7pvhKhCtLn+n+MWwtzl/
 L9JUT4+BgxeLepXtkolhAkEA2V7er7fnEuL0+kKIjmOm5F3kvMIDh9YC1JwLGSvu
 1fnzxK34QwSdxgQRF1dfIKJw73lClQpHZfQxL/2XRG8IoA==";
 
-            var encResult = CryptoHelper.RSAEncrypt(rawText, _publicKey, SHA1HashSize.SHA256);
+            var encResult = CryptoHelper.RSAEncrypt(rawText, _publicKey);
             Assert.True(encResult.Success);
 
-            var decResult = CryptoHelper.RSADecrypt(encResult.Value, _privateKey, SHA1HashSize.SHA256);
+            var decResult = CryptoHelper.RSADecrypt(encResult.Value, _privateKey);
             Assert.True(decResult.Success);
 
             Assert.Equal(rawText, decResult.Value);
