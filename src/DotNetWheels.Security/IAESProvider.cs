@@ -10,10 +10,9 @@ namespace DotNetWheels.Security
 {
     public interface IAESProvider
     {
-        XResult<String> Encrypt(String rawText, KeyManager km);
-        XResult<String> Decrypt(String encryptedString, KeyManager km);
+        XResult<String> Encrypt(String rawText, KeyManager km, String charset = "UTF-8");
+        XResult<String> Decrypt(String encryptedString, KeyManager km, String charset = "UTF-8");
         XResult<Byte[]> Encrypt(Stream stream, KeyManager km);
-        XResult<Byte[]> Decrypt(Byte[] encryptedData, KeyManager km);
         XResult<Byte[]> Decrypt(Stream stream, KeyManager km);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -8,129 +9,6 @@ namespace DotNetWheels.Security
 {
     internal class RSAProvider : IRSAProvider
     {
-        public XResult<String> Decrypt(String encryptedString, String privateKeyPem, SHA1HashSize hashSize, String charset)
-        {
-            if (String.IsNullOrWhiteSpace(encryptedString))
-            {
-                return new XResult<String>(null, new ArgumentNullException("encryptedString is null"));
-            }
-
-            if (String.IsNullOrWhiteSpace(privateKeyPem))
-            {
-                return new XResult<String>(null, new ArgumentNullException("privateKeyPem is null"));
-            }
-
-            if (String.IsNullOrWhiteSpace(charset))
-            {
-                return new XResult<String>(null, new ArgumentNullException("charset is null"));
-            }
-
-            Byte[] inputData = null;
-            try
-            {
-                inputData = Encoding.GetEncoding(charset).GetBytes(encryptedString);
-            }
-            catch (Exception ex)
-            {
-                return new XResult<String>(null, ex);
-            }
-
-            using (var ms = new MemoryStream(inputData))
-            {
-                var result = Decrypt(inputData, privateKeyPem, hashSize);
-                if (result.Success)
-                {
-                    String decryptedString = Convert.ToBase64String(result.Value, Base64FormattingOptions.None);
-                    return new XResult<String>(decryptedString);
-                }
-                else
-                {
-                    return new XResult<String>(null, result.Exceptions[0]);
-                }
-            }
-        }
-
-        public XResult<Byte[]> Decrypt(Byte[] encryptedData, String privateKeyPem, SHA1HashSize hashSize)
-        {
-            if (encryptedData == null || encryptedData.Length == 0)
-            {
-                return new XResult<Byte[]>(null, new ArgumentNullException("encryptedData is null"));
-            }
-
-            if (String.IsNullOrWhiteSpace(privateKeyPem))
-            {
-                return new XResult<Byte[]>(null, new ArgumentNullException("privateKeyPem"));
-            }
-
-            using (var ms = new MemoryStream(encryptedData))
-            {
-                return Decrypt(ms, privateKeyPem, hashSize);
-            }
-        }
-
-        public XResult<Byte[]> Decrypt(Stream stream, String privateKeyPem, SHA1HashSize hashSize)
-        {
-            if (stream == null || stream.Length == 0)
-            {
-                return new XResult<Byte[]>(null, new ArgumentNullException("stream is null or empty"));
-            }
-
-            if (String.IsNullOrWhiteSpace(privateKeyPem))
-            {
-                return new XResult<Byte[]>(null, new ArgumentNullException("privateKeyPem is null"));
-            }
-
-            var rsa = CreateRSAFromPrivateKey(privateKeyPem);
-            if (rsa == null)
-            {
-                return new XResult<Byte[]>(null, new CryptographicException("CreateRSAFromPrivateKey(privateKeyPem)"));
-            }
-
-            Int32 maxBlockSize = rsa.KeySize / 8 - 11;
-
-            if (stream.Length <= maxBlockSize)
-            {
-                try
-                {
-                    var inputData = new Byte[stream.Length];
-                    stream.Write(inputData, 0, inputData.Length);
-                    var decryptedData = rsa.Decrypt(inputData, RSAEncryptionPadding.Pkcs1);
-                    return new XResult<Byte[]>(decryptedData);
-                }
-                catch (Exception ex)
-                {
-                    return new XResult<Byte[]>(null, ex);
-                }
-            }
-
-            Byte[] readBuffer = new Byte[maxBlockSize];
-            Int32 read = 0;
-
-            var dataStream = stream;
-            var cryptoStream = new MemoryStream();
-            try
-            {
-                while ((read = dataStream.Read(readBuffer, 0, readBuffer.Length)) > 0)
-                {
-                    Byte[] toDecrypt = new Byte[read];
-                    Array.Copy(readBuffer, 0, toDecrypt, 0, read);
-                    var decryptedBuffer = rsa.Decrypt(toDecrypt, RSAEncryptionPadding.Pkcs1);
-                    cryptoStream.Write(decryptedBuffer, 0, decryptedBuffer.Length);
-                }
-
-                return new XResult<Byte[]>(cryptoStream.ToArray());
-            }
-            catch (Exception ex)
-            {
-                return new XResult<Byte[]>(null, ex);
-            }
-            finally
-            {
-                dataStream.Dispose();
-                cryptoStream.Dispose();
-            }
-        }
-
         public XResult<String> Encrypt(String rawText, String publicKeyPem, SHA1HashSize hashSize, String charset)
         {
             if (String.IsNullOrWhiteSpace(rawText))
@@ -158,24 +36,34 @@ namespace DotNetWheels.Security
                 return new XResult<String>(null, ex);
             }
 
-            using (var ms = new MemoryStream(inputData))
+            MemoryStream ms = null;
+            try
             {
+                ms = new MemoryStream(inputData);
                 var result = Encrypt(ms, publicKeyPem, hashSize);
                 if (result.Success)
                 {
-                    String encryptedString = Convert.ToBase64String(result.Value, Base64FormattingOptions.None);
+                    String encryptedString = Convert.ToBase64String(result.Value);
                     return new XResult<String>(encryptedString);
                 }
                 else
                 {
-                    return new XResult<String>(null, result.Exceptions[0]);
+                    return new XResult<String>(null, result.Exceptions.ToArray());
                 }
+            }
+            catch (Exception ex)
+            {
+                return new XResult<String>(null, ex);
+            }
+            finally
+            {
+                if (ms != null) { ms.Dispose(); }
             }
         }
 
         public XResult<Byte[]> Encrypt(Stream stream, String publicKeyPem, SHA1HashSize hashSize)
         {
-            if (stream == null || stream.Length == 0)
+            if (stream == null || stream.Length == 0 || !stream.CanRead)
             {
                 return new XResult<Byte[]>(null, new ArgumentNullException("stream is null or empty"));
             }
@@ -185,12 +73,22 @@ namespace DotNetWheels.Security
                 return new XResult<Byte[]>(null, new ArgumentNullException("publicKeyPem is null"));
             }
 
-            var rsa = CreateRSAFromPublicKey(publicKeyPem);
+            RSA rsa = null;
+            try
+            {
+                rsa = CreateRSAFromPublicKey(publicKeyPem);
+            }
+            catch (Exception ex)
+            {
+                return new XResult<Byte[]>(null, ex);
+            }
+
             if (rsa == null)
             {
                 return new XResult<Byte[]>(null, new CryptographicException("CreateRSAFromPublicKey(publicKeyPem)"));
             }
 
+            //这个地方不知道为啥要减掉11，不减的话会报错
             Int32 maxBlockSize = rsa.KeySize / 8 - 11;
 
             if (stream.Length <= maxBlockSize)
@@ -198,9 +96,143 @@ namespace DotNetWheels.Security
                 try
                 {
                     var inputData = new Byte[stream.Length];
-                    stream.Write(inputData, 0, inputData.Length);
+                    stream.Read(inputData, 0, inputData.Length);
                     var encryptedData = rsa.Encrypt(inputData, RSAEncryptionPadding.Pkcs1);
                     return new XResult<Byte[]>(encryptedData);
+                }
+                catch (Exception ex)
+                {
+                    return new XResult<Byte[]>(null, ex);
+                }
+            }
+
+            Byte[] readBuffer = new Byte[maxBlockSize];
+            Int32 read = 0;
+
+            var cryptoStream = new MemoryStream();
+            try
+            {
+                while ((read = stream.Read(readBuffer, 0, readBuffer.Length)) > 0)
+                {
+                    Byte[] toEncrypt = new Byte[read];
+                    Array.Copy(readBuffer, 0, toEncrypt, 0, read);
+                    var encryptedBuffer = rsa.Encrypt(toEncrypt, RSAEncryptionPadding.Pkcs1);
+                    cryptoStream.Write(encryptedBuffer, 0, encryptedBuffer.Length);
+                }
+
+                return new XResult<Byte[]>(cryptoStream.ToArray());
+            }
+            catch (Exception ex)
+            {
+                return new XResult<Byte[]>(null, ex);
+            }
+            finally
+            {
+                cryptoStream.Dispose();
+            }
+        }
+
+        public XResult<String> Decrypt(String encryptedString, String privateKeyPem, SHA1HashSize hashSize, String charset)
+        {
+            if (String.IsNullOrWhiteSpace(encryptedString))
+            {
+                return new XResult<String>(null, new ArgumentNullException("encryptedString is null"));
+            }
+
+            if (String.IsNullOrWhiteSpace(privateKeyPem))
+            {
+                return new XResult<String>(null, new ArgumentNullException("privateKeyPem is null"));
+            }
+
+            if (String.IsNullOrWhiteSpace(charset))
+            {
+                return new XResult<String>(null, new ArgumentNullException("charset is null"));
+            }
+
+            Byte[] inputData = null;
+            try
+            {
+                inputData = Convert.FromBase64String(encryptedString);
+            }
+            catch (Exception ex)
+            {
+                return new XResult<String>(null, ex);
+            }
+
+            MemoryStream ms = null;
+            try
+            {
+                ms = new MemoryStream(inputData);
+                var result = Decrypt(ms, privateKeyPem, hashSize);
+                if (result.Success)
+                {
+                    try
+                    {
+                        String decryptedString = Encoding.GetEncoding(charset).GetString(result.Value);
+                        return new XResult<String>(decryptedString);
+                    }
+                    catch (Exception ex)
+                    {
+                        return new XResult<String>(null, ex);
+                    }
+                }
+                else
+                {
+                    return new XResult<String>(null, result.Exceptions.ToArray());
+                }
+            }
+            catch (Exception ex)
+            {
+                return new XResult<String>(null, ex);
+            }
+            finally
+            {
+                if (ms != null) { ms.Dispose(); }
+            }
+        }
+
+        public XResult<Byte[]> Decrypt(Stream stream, String privateKeyPem, SHA1HashSize hashSize)
+        {
+            if (stream == null || stream.Length == 0)
+            {
+                return new XResult<Byte[]>(null, new ArgumentNullException("stream is null or empty"));
+            }
+
+            if (String.IsNullOrWhiteSpace(privateKeyPem))
+            {
+                return new XResult<Byte[]>(null, new ArgumentNullException("privateKeyPem is null"));
+            }
+
+            RSA rsa = null;
+            try
+            {
+                rsa = CreateRSAFromPrivateKey(privateKeyPem);
+            }
+            catch (Exception ex)
+            {
+                return new XResult<Byte[]>(null, ex);
+            }
+
+            if (rsa == null)
+            {
+                return new XResult<Byte[]>(null, new CryptographicException("CreateRSAFromPrivateKey(privateKeyPem)"));
+            }
+
+            if (stream.Length > 0 && stream.CanSeek && stream.Position != 0)
+            {
+                stream.Position = 0;
+            }
+
+            Int32 maxBlockSize = rsa.KeySize / 8;
+
+            if (stream.Length <= maxBlockSize)
+            {
+                try
+                {
+                    var inputData = new Byte[stream.Length];
+                    stream.Read(inputData, 0, inputData.Length);
+                    var decryptedData = rsa.Decrypt(inputData, RSAEncryptionPadding.Pkcs1);
+                    return new XResult<Byte[]>(decryptedData);
                 }
                 catch (Exception ex)
                 {
@@ -217,10 +249,10 @@ namespace DotNetWheels.Security
             {
                 while ((read = dataStream.Read(readBuffer, 0, readBuffer.Length)) > 0)
                 {
-                    Byte[] toEncrypt = new Byte[read];
-                    Array.Copy(readBuffer, 0, toEncrypt, 0, read);
-                    var encryptedBuffer = rsa.Encrypt(toEncrypt, RSAEncryptionPadding.Pkcs1);
-                    cryptoStream.Write(encryptedBuffer, 0, encryptedBuffer.Length);
+                    Byte[] toDecrypt = new Byte[read];
+                    Array.Copy(readBuffer, 0, toDecrypt, 0, read);
+                    var decryptedBuffer = rsa.Decrypt(toDecrypt, RSAEncryptionPadding.Pkcs1);
+                    cryptoStream.Write(decryptedBuffer, 0, decryptedBuffer.Length);
                 }
 
                 return new XResult<Byte[]>(cryptoStream.ToArray());

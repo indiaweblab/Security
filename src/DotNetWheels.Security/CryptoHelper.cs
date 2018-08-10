@@ -13,11 +13,13 @@ namespace DotNetWheels.Security
     {
         private static IOneWayHash _onewayhash;
         private static IAESProvider _aesprovider;
+        private static IRSAProvider _rsaProvider;
 
         static CryptoHelper()
         {
             _onewayhash = new OneWayHash();
             _aesprovider = new AESProvider();
+            _rsaProvider = new RSAProvider();
         }
 
         public static XResult<String> GetMD5(String input)
@@ -30,7 +32,7 @@ namespace DotNetWheels.Security
             return _onewayhash.GetSHA1(input, size);
         }
 
-        public static XResult<String> Encrypt(String input, String key)
+        public static XResult<String> AESEncrypt(String input, String key)
         {
             if (String.IsNullOrEmpty(input))
             {
@@ -52,7 +54,7 @@ namespace DotNetWheels.Security
             }
         }
 
-        public static XResult<String> Decrypt(String encryptedString, String key)
+        public static XResult<String> AESDecrypt(String encryptedString, String key)
         {
             if (String.IsNullOrEmpty(encryptedString))
             {
@@ -74,7 +76,7 @@ namespace DotNetWheels.Security
             }
         }
 
-        public static XResult<Byte[]> Encrypt(Stream stream, String key)
+        public static XResult<Byte[]> AESEncrypt(Stream stream, String key)
         {
             if (stream == null)
             {
@@ -96,29 +98,7 @@ namespace DotNetWheels.Security
             }
         }
 
-        public static XResult<Byte[]> Decrypt(Byte[] encryptedData, String key)
-        {
-            if (encryptedData == null || encryptedData.Length == 0)
-            {
-                return new XResult<Byte[]>(null, new ArgumentNullException("The encrypted value is null"));
-            }
-
-            if (String.IsNullOrEmpty(key))
-            {
-                return new XResult<Byte[]>(null, new ArgumentNullException("The key is null"));
-            }
-
-            try
-            {
-                return _aesprovider.Decrypt(encryptedData, new KeyManager(key));
-            }
-            catch (Exception ex)
-            {
-                return new XResult<Byte[]>(null, ex);
-            }
-        }
-
-        public static XResult<Byte[]> Decrypt(Stream stream, String key)
+        public static XResult<Byte[]> AESDecrypt(Stream stream, String key)
         {
             if (stream == null || stream.Length == 0)
             {
@@ -140,5 +120,24 @@ namespace DotNetWheels.Security
             }
         }
 
+        public static XResult<String> RSAEncrypt(String rawText, String publicKeyPem, SHA1HashSize hashSize, String charset = "UTF-8")
+        {
+            return _rsaProvider.Encrypt(rawText, publicKeyPem, hashSize, charset);
+        }
+
+        public static XResult<Byte[]> RSAEncrypt(Stream stream, String publicKeyPem, SHA1HashSize hashSize)
+        {
+            return _rsaProvider.Encrypt(stream, publicKeyPem, hashSize);
+        }
+
+        public static XResult<String> RSADecrypt(String encryptedString, String privateKeyPem, SHA1HashSize hashSize, String charset = "UTF-8")
+        {
+            return _rsaProvider.Decrypt(encryptedString, privateKeyPem, hashSize, charset);
+        }
+
+        public static XResult<Byte[]> RSADecrypt(Stream stream, String privateKeyPem, SHA1HashSize hashSize)
+        {
+            return _rsaProvider.Decrypt(stream, privateKeyPem, hashSize);
+        }
     }
 }
