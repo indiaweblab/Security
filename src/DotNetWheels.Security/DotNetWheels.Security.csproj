@@ -18,11 +18,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DotNetWheels.Core" Version="1.0.18" />
+    <Reference Include="DotNetWheels.Core">
+      <HintPath>D:\Packages\lib\DotNetWheels.Core.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="dotnet pack $(ProjectPath) --no-build --include-symbols -c $(ConfigurationName) -o D:\Packages" />
+    <Exec Command="icopy $(TargetDir) D:\Packages\lib\ -include &quot;.dll|.pdb&quot;" />
   </Target>
 
 </Project>
