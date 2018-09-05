@@ -17,14 +17,14 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="icopy $(TargetDir) D:\Packages\lib\$(ProjectName)\ -include &quot;.dll|.pdb&quot;" />
+  </Target>
+
   <ItemGroup>
     <Reference Include="DotNetWheels.Core">
-      <HintPath>D:\Packages\lib\DotNetWheels.Core.dll</HintPath>
+      <HintPath>..\..\..\..\Packages\lib\DotNetWheels.Core\DotNetWheels.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="icopy $(TargetDir) D:\Packages\lib\ -include &quot;.dll|.pdb&quot;" />
-  </Target>
 
 </Project>
