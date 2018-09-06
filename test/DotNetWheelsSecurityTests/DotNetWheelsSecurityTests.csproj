@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <Reference Include="DotNetWheels.Core">
-      <HintPath>D:\Packages\lib\DotNetWheels.Core.dll</HintPath>
+      <HintPath>D:\Packages\DotNetWheels.Core\DotNetWheels.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
 
