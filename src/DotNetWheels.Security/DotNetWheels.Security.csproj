@@ -18,12 +18,12 @@
   </PropertyGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="icopy $(TargetDir) D:\Packages\lib\$(ProjectName)\ -include &quot;.dll|.pdb&quot;" />
+    <Exec Command="icopy $(TargetDir) D:\Packages\$(ProjectName)\ -include &quot;.dll|.pdb&quot;" />
   </Target>
 
   <ItemGroup>
     <Reference Include="DotNetWheels.Core">
-      <HintPath>..\..\..\..\Packages\lib\DotNetWheels.Core\DotNetWheels.Core.dll</HintPath>
+      <HintPath>D:\Packages\DotNetWheels.Core\DotNetWheels.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
 
