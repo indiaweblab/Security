@@ -5,7 +5,7 @@
     <Authors>DotNetWheels</Authors>
     <Product>DotNetWheels</Product>
     <Description>DotNetWheels.</Description>
-    <Version>1.0.12</Version>
+    <Version>1.0.14</Version>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
@@ -18,13 +18,11 @@
   </PropertyGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="icopy $(TargetDir) D:\Packages\$(ProjectName)\ -include &quot;.dll|.pdb&quot;" />
+    <Exec Command="dotnet pack $(ProjectPath) --no-build --include-symbols -c $(ConfigurationName) -o D:\Packages\$(ProjectName)\" />
   </Target>
 
   <ItemGroup>
-    <Reference Include="DotNetWheels.Core">
-      <HintPath>D:\Packages\DotNetWheels.Core\DotNetWheels.Core.dll</HintPath>
-    </Reference>
+    <PackageReference Include="DotNetWheels.Core" Version="1.0.28" />
   </ItemGroup>
 
 </Project>
