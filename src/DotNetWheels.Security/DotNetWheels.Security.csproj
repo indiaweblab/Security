@@ -5,8 +5,12 @@
     <Authors>DotNetWheels</Authors>
     <Product>DotNetWheels</Product>
     <Description>DotNetWheels.</Description>
-    <Version>1.0.14</Version>
+    <Version>1.0.15</Version>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageLicenseUrl>https://github.com/dotnetwheels/Security/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/dotnetwheels/Security</RepositoryUrl>
+    <PackageIconUrl>https://s.gravatar.com/avatar/ba1602b9453dfeb4804d1167baf9eb20?s=448</PackageIconUrl>
+    <PackageTags>DotNetWheels Security</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
